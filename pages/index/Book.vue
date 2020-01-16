@@ -1,8 +1,8 @@
 <template>
     <view>
         <view class="content">
-            <view class="image"><image src="/static/img/7-2.jpg" mode="aspectFit" style="width: 200px; height: 200px;" /></view>
-            <view>{{testParams.cloudContent}}</view>
+            <view class="image"><image :src="bookImg" mode="aspectFit" style="width: 200px; height: 200px;" /></view>
+            <view>{{ bookImg }}</view>
             <view class="story">
                 <text>{{ storyContent }}</text>
                 <image @click="hanlerPaly" :src="playImg" mode="aspectFit" style="width: 20px; height: 20px;" />
@@ -13,8 +13,10 @@
 
 <script>
 import common from '../../common/js/common.js';
-import service_stub from '../../common/js/cloud_service.js';
 export default {
+    props: {
+        
+    },
     data() {
         return {
             storyContent: 'In a grim, grey house in a grim, grey town lived an unhappy man.',
@@ -26,8 +28,13 @@ export default {
             playImg: '/static/img/start.jpg', // 播放或者暂停图片
             testParams: {cloudContent:'hello?'},
             cloudContent: 'hello api, Default data.',
-            accessToken: 'baidu api token...'
+            accessToken: 'baidu api token...',
+            bookImg: "/static/logo.png",
         };
+    },
+    onLoad(e) {
+    	this.bookImage = "/static/img/" + e.book + ".jpg"
+        console.log("onLoad:" + this.bookImage)
     },
     methods: {
         // 播放暂停
@@ -56,30 +63,6 @@ export default {
                     } else {
                         this.accessToken = res.result.token;
                         this.buildAudioUrl(this.storyContent, this.accessToken);
-                    }
-                });
-        },
-        testCloud() {
-            // 测试调用云函数
-            wx.cloud.init(); //调用前需先调用init
-            wx.cloud
-                .callFunction({
-                    name: 'hello',
-                    data: {
-                        content: '...'
-                    }
-                })
-                .then(res => {
-                    //console.log(res.result)
-                    if (res.result.code == 300) {
-                        uni.showModal({
-                            title: '温馨提示',
-                            content: '不支持进行下一步操作'
-                        });
-                        //return
-                        this.cloudContent = 'Ops!';
-                    } else {
-                        this.cloudContent = res.result.msg;
                     }
                 });
         },
@@ -142,9 +125,11 @@ export default {
         }
     },
     created() {
-        this.testCloud();
-        service_stub.testCloud(testParams);
         this.getBaiduToken();
+    },
+    mounted() {
+        this.bookImage = "/static/img/7-3.jpg"
+        console.log("mounted:" + this.bookImage)
     },
     destroyed() {
         this.innerAudioContext.destroy();
@@ -159,7 +144,8 @@ export default {
                 this.playImg = '/static/img/start.jpg';
                 this.innerAudioContext.pause();
             }
-        }
+        },
+        
     }
 };
 </script>

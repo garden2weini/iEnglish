@@ -1,6 +1,18 @@
 {
     "pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
         {
+            "path": "pages/index/index",
+            "style": {
+                "navigationBarTitleText": "Story List"
+            }
+        },
+        {
+            "path": "pages/index/Book",
+            "style": {
+                //"navigationBarTitleText": "Story List"
+            }
+        },
+        {
             "path": "pages/goodenglish7/NoisyNeighbours",
             "style": {
                 "navigationBarTitleText": "Noisy Neighbours"
@@ -10,12 +22,6 @@
             "path": "pages/sandbox/radio",
             "style": {
                 "navigationBarTitleText": "sandbox-radio"
-            }
-        },
-        {
-            "path": "pages/index/index",
-            "style": {
-                "navigationBarTitleText": "uni-app"
             }
         }
 

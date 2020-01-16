@@ -8,3 +8,4 @@ npm install --save got
 
 ## Ref
 - [uni-app+云函数](https://www.cnblogs.com/xhxdd/p/12022051.html)
+- [小程序云函数调用API接口的方法](https://www.jb51.net/article/161434.htm)
