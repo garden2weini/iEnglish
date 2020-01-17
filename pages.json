@@ -9,7 +9,7 @@
         {
             "path": "pages/index/Book",
             "style": {
-                //"navigationBarTitleText": "Story List"
+                "navigationBarTitleText": "Good English"
             }
         },
         {

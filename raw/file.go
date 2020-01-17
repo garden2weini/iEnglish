@@ -45,6 +45,19 @@ func WriteWithIo(name, content string) {
 		os.Exit(2)
 	}
 	if _, err := io.WriteString(fileObj, content); err == nil {
-		fmt.Println("Successful appending to the file with os.OpenFile and io.WriteString.", content)
+		//fmt.Println("Successful appending to the file with os.OpenFile and io.WriteString.", content)
+		fmt.Println("Successful appending to the file with os.OpenFile and io.WriteString.")
+	}
+}
+
+func clearOldFile(fileName string) {
+	err := os.Remove(fileName)
+
+	if err != nil {
+		// 删除失败
+		fmt.Println(err)
+	} else {
+		// 删除成功
+
 	}
 }
