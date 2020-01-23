@@ -2,7 +2,7 @@
     <view>
         <view class="title">Good English 7</view>
         <view>
-            <image class="story_column" @click="gotoStroy('7-1')" src="../../static/img/7-1.jpg" mode="aspectFit" />
+            <image class="story_column" @click="gotoStroyX('7-1')" src="../../static/img/7-1.jpg" mode="aspectFit" />
             <image class="story_column" @click="gotoStroy('7-2')" src="../../static/img/7-2.jpg" mode="aspectFit" />
             <image class="story_column" @click="gotoStroy('7-3')" src="../../static/img/7-3.jpg" mode="aspectFit" />
             <image class="story_column" @click="gotoStroy('7-4')" src="../../static/img/7-4.jpg" mode="aspectFit" />
@@ -21,23 +21,18 @@
             <image class="story_column" @click="gotoStroy('7-17')" src="../../static/img/7-17.jpg" mode="aspectFit" />
             <image class="story_column" @click="gotoStroy('7-18')" src="../../static/img/7-18.jpg" mode="aspectFit" />
         </view>
+        <view class="title">SandBox</view>
+        <view>
+            <image class="story_column" @click="test()" src="../../static/logo.png" mode="aspectFit" />
+            <image class="story_column" @click="gotoStroyX('7-1')" src="../../static/img/7-1.jpg" mode="aspectFit" />
+        </view>
         <!--
         <view class="title">Good English 8</view>
         <view>
             <image class="story_column" @click="gotoStroy('goodenglish7', 'NoisyNeighbours')" src="../../static/img/7-2.jpg" mode="aspectFit" />
-            <image class="story_column" @click="gotoStroy('goodenglish7', 'NoisyNeighbours')" src="../../static/img/7-2.jpg" mode="aspectFit" />
-            <image class="story_column" @click="gotoStroy('goodenglish7', 'NoisyNeighbours')" src="../../static/img/7-2.jpg" mode="aspectFit" />
         </view>
         <view class="title">Good English 9</view>
         <view>
-            <image class="story_column" @click="gotoStroy('goodenglish7', 'NoisyNeighbours')" src="../../static/img/7-2.jpg" mode="aspectFit" />
-            <image class="story_column" @click="gotoStroy('goodenglish7', 'NoisyNeighbours')" src="../../static/img/7-2.jpg" mode="aspectFit" />
-            <image class="story_column" @click="gotoStroy('goodenglish7', 'NoisyNeighbours')" src="../../static/img/7-2.jpg" mode="aspectFit" />
-        </view>
-        <view class="title">Good English 10</view>
-        <view>
-            <image class="story_column" @click="gotoStroy('goodenglish7', 'NoisyNeighbours')" src="../../static/img/7-2.jpg" mode="aspectFit" />
-            <image class="story_column" @click="gotoStroy('goodenglish7', 'NoisyNeighbours')" src="../../static/img/7-2.jpg" mode="aspectFit" />
             <image class="story_column" @click="gotoStroy('goodenglish7', 'NoisyNeighbours')" src="../../static/img/7-2.jpg" mode="aspectFit" />
         </view>
         -->
@@ -54,6 +49,18 @@ export default {
         gotoStroy(book) {
             uni.redirectTo({
                 url: '../index/Book?book=' + book
+            });
+        },
+        gotoStroyX(book) { // Just Test
+            uni.redirectTo({
+                //url: '../sandbox/text'
+                url: '../index/BookX?book=' + book
+            });
+        },
+        test() { // Just Test
+            console.log("888888")
+            uni.redirectTo({
+                url: '../sandbox/record'
             });
         }
     },

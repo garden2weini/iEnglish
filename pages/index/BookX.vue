@@ -5,14 +5,23 @@
             <view class="story">
                 <h4>#. {{ curChapterName }}</h4>
                 <text>{{ storyContent }}</text>
-                <image @click="hanlerPaly" :src="playImg" mode="aspectFit" style="width: 40px; height: 40px;" />
             </view>
             <view>
                 <button @click="goBack" class="mini-btn" type="primary" size="mini">{{ leftArraw }}</button>
+                <text space="ensp" decode="true">{{ whiteSpace }}</text>
                 <button @click="goForward" class="mini-btn" type="primary" size="mini">{{ rightArraw }}</button>
             </view>
             <view>
-                 <image @click="hanlerRecord" :src="recordImg" mode="aspectFit" style="width: 40px; height: 40px;" />
+                <!-- Raw Audio -->
+                <image @click="hanlerPaly" :src="playImg" mode="aspectFit" style="width: 40px; height: 40px;" />
+                <text space="ensp" decode="true">{{ whiteSpace }}{{ whiteSpace }}{{ whiteSpace }}</text>
+                <image @click="hanlerRecord" :src="recordImg" mode="aspectFit" style="width: 40px; height: 40px;" />
+                <!-- Record Audio -->
+                <text space="ensp" decode="true">{{ whiteSpace }}{{ whiteSpace }}{{ whiteSpace }}</text>
+                <image @click="parseAndCompare" :src="playImg" mode="aspectFit" style="width: 40px; height: 40px;" />
+            </view>
+            <view class="uni-textarea">
+                <textarea placeholder-style="color:#F76260" :placeholder="voicePath"/>
             </view>
         </view>
     </view>
@@ -36,6 +45,7 @@ innerAudioContext.autoplay = true;
 export default {
     data() {
         return {
+            whiteSpace: '&nbsp;&nbsp;&nbsp;',
             leftArraw: '<',
             rightArraw: '>',
             storyContent: 'None',
@@ -46,7 +56,7 @@ export default {
             nowTime: 0, // 音频当前播放时长
             playImg: '/static/img/start.jpg', // 播放或者暂停图片
             isRecord: false, // 是否开始录音
-            recordImg:  '/static/img/record/record.gif',
+            recordImg: '/static/img/record/record.gif',
             cloudContent: 'baidu api, Default data.',
             accessToken: 'baidu api token...',
             bookImage: '/static/logo.png',
@@ -54,7 +64,8 @@ export default {
             chapterIndex: -1,
             contentIndex: -1,
             chapters: null, // 当前图书章节及内容，从数据库中读取json数据
-            curChapterName: 'None'
+            curChapterName: 'None',
+            voicePath: 'no file' // 录制音频的文件路径
         };
     },
     onLoad(e) {
@@ -62,27 +73,55 @@ export default {
         this.curBook = e.book;
         this.bookImage = '/static/img/' + e.book + '.jpg';
         this.getChapters(this.curBook);
-        
+
         // 准备加载录音引擎
         let self = this;
-        recorderManager.onStop(function (res) {
+        recorderManager.onStop(function(res) {
             console.log('recorder stop' + JSON.stringify(res));
             self.voicePath = res.tempFilePath;
         });
     },
     methods: {
-        parseAndCompare() { // 获取录音的转换文字，并比较正确率
+        parseAndCompare() {
+            // 获取录音的转换文字，并比较正确率
+            let RATE = 16000;
+            let DEV_PID = 1737; //  1737,英语+无标点; 1536,普通话(支持简单的英文识别)+搜索模型+无标点
+            let FORMAT = 'm4a'; // m4a for mp3, 
+            let CUID = 'weini-garden-2020';
+            //let AUDIO_FILE = this.voicePath;
+            let AUDIO_FILE = '/static/hello.mp3';
+            console.log("File2Decode:" + this.voicePath);
+            let speech_file = wx.getFileSystemManager().readFileSync(AUDIO_FILE);
+            console.log('Raw:' + speech_file);
+            let length = speech_file.byteLength;
+            console.log('Length:' + length);
+            let speech = uni.arrayBufferToBase64(speech_file);
+
             uni.request({
-                url: 'https://www.example.com/request', //仅为示例，并非真实接口地址。
-                data: {
-                    text: 'uni.request'
-                },
+                url: 'http://vop.baidu.com/server_api',
+                method: 'POST',
                 header: {
-                    'custom-header': 'hello' //自定义请求头信息
+                    'content-type': 'application/json'
                 },
-                success: (res) => {
+                data: {
+                    dev_pid: DEV_PID,
+                    //"lm_id" : LM_ID,    #测试自训练平台开启此项
+                    format: FORMAT,
+                    channel: 1,
+                    rate: RATE,
+                    token: this.accessToken,
+                    cuid: CUID,
+                    channel: 1,
+                    speech: speech,
+                    len: length
+                },
+                success: res => {
                     console.log(res.data);
+                    console.log(res.data.result);
                     this.text = 'request success';
+                },
+                fail: result => {
+                    console.log('Parse Error:' + result);
                 }
             });
         },
@@ -121,8 +160,8 @@ export default {
             } else {
                 this.contentIndex++;
             }
-            console.log('ChapterLen:' + chapterLen + ',ContentLen:' + contentLen);
-            console.log('ChapterIdx:' + this.chapterIndex + ',ContentIdx:' + this.contentIndex);
+            //console.log('ChapterLen:' + chapterLen + ',ContentLen:' + contentLen);
+            //console.log('ChapterIdx:' + this.chapterIndex + ',ContentIdx:' + this.contentIndex);
             this.curChapterName = this.chapters[this.chapterIndex].name;
             this.storyContent = this.chapters[this.chapterIndex].contents[this.contentIndex].content;
         },
@@ -134,7 +173,7 @@ export default {
                 env: 'weini-home-b5ggv'
             });
             // 2. 构造查询语句(NOTE:每次只能获取20条记录)
-            console.log('TableName:' + bookTable);
+            //console.log('TableName:' + bookTable);
             db.collection(bookTable)
                 .where({
                     //chapter: _.gte(1) // 大于或等于(>=)
@@ -156,8 +195,8 @@ export default {
             this.isPlay = !this.isPlay;
         },
         hanlerRecord() {
-          // 录音暂停
-          this.isRecord = !this.isRecord;
+            // 录音暂停
+            this.isRecord = !this.isRecord;
         },
         getBaiduToken() {
             // 通过调用云函数获得baidu access token
@@ -218,8 +257,9 @@ export default {
                 spd: 5, // 语速，取值0-15，默认为5中语速
                 pit: 5, // 音调，取值0-15，默认为5中语调
                 vol: 15, // 音量，取值0-15，默认为5中音量
-                per: 5, // 基础音库, 选择男声／女生; 度小宇=1，度小美=0，度逍遥=3，度丫丫=4;度博文=106，度小童=110，度小萌=111，度米朵=103，度小娇=5
-                //aue: 5, 
+                //per: 4 ,// 基础音库, 选择男声／女生; 度小宇=1，度小美=0，度逍遥=3，度丫丫=4;
+                per: 5 // 精品音库 度博文=106，度小童=110，度小萌=111，度米朵=103，度小娇=5
+                //aue: 3, // 3为mp3格式(默认), 4为pcm-16k, 5为pcm-8k, 6为wav（内容同pcm-16k）
             };
 
             // 创建form参数
@@ -265,16 +305,27 @@ export default {
             }
         },
         isRecord(val, oldVal) {
-            if (val) { // 编写开始录音的逻辑
+            if (val) {
+                // REF: https://uniapp.dcloud.io/api/media/record-manager
+                // REF; https://smartprogram.baidu.com/docs/develop/api/media/recorder_RecorderManager/
+                const options = {
+                    //duration: 5000, // 指定录音的时长，单位 ms
+                    sampleRate: 16000, // 采样率，有效值 8000/16000(百度仅适用此值！)/44100
+                    numberOfChannels: 1, // 录音通道数，有效值 1/2
+                    //encodeBitRate: 24000, // 编码码率
+                    format: 'mp3' // 音频格式，有效值 aac/mp3
+                };
+                // 编写开始录音的逻辑
                 this.recordImg = '/static/img/record/stop.jpg';
-                recorderManager.start();
-            } else {  // 编写结束录音的逻辑
-                this.recordImg = '/static/img/record/play.jpg';
+                recorderManager.start(options);
+            } else {
+                // 编写结束录音的逻辑
+                this.recordImg = '/static/img/record/play.png';
                 recorderManager.stop();
                 if (this.voicePath) {
                     console.log(this.voicePath);
                 } else {
-                    console.log("voicePath is null!");
+                    console.log('voicePath is null!');
                 }
             }
         },

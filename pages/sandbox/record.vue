@@ -7,19 +7,30 @@
 </template>
 
 <script>
+
+    // 获取App录音功能
+    uni.authorize({
+        scope: 'scope.record',
+        success() {
+            uni.getRecorderManager();
+        }
+    })
+
 const recorderManager = uni.getRecorderManager();
 const innerAudioContext = uni.createInnerAudioContext();
 
 innerAudioContext.autoplay = true;
 
 export default {
-    data: {
-        text: 'uni-app',
-        voicePath: ''
+    data() {
+        return {
+            text: 'uni-app',
+            voicePath: '',
+        }
     },
     onLoad() {
         let self = this;
-        recorderManager.onStop(function(res) {
+        recorderManager.onStop(function (res) {
             console.log('recorder stop' + JSON.stringify(res));
             self.voicePath = res.tempFilePath;
         });
@@ -43,7 +54,7 @@ export default {
             }
         }
     }
-};
+}
 </script>
 
 <style></style>

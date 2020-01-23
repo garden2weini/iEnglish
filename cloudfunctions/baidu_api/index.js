@@ -17,6 +17,7 @@ exports.main = async (event, context) => {
         let tokenUrl = VOICE_AUTH_URL + "&client_id=" + APIKEY + "&client_secret=" + APISECRET
         let tokenResponse = await got(tokenUrl)
         accessToken = JSON.parse(tokenResponse.body).access_token
+        // expires_in 表示 2592000秒后该token失效
     }
     
     return {
