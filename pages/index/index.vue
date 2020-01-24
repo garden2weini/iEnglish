@@ -40,6 +40,21 @@
 </template>
 
 <script>
+    // 获取App录音功能
+    uni.authorize({
+        scope: 'scope.record',
+        success() {
+            uni.getRecorderManager();
+        }
+    })
+/*
+wx.authorize({
+   scope: 'scope.record',
+   success: res=>{
+      console.log(res);
+   }
+})
+*/
 export default {
     data() {
         return {};

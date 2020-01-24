@@ -18,26 +18,19 @@
                 <image @click="hanlerRecord" :src="recordImg" mode="aspectFit" style="width: 40px; height: 40px;" />
                 <!-- Record Audio -->
                 <text space="ensp" decode="true">{{ whiteSpace }}{{ whiteSpace }}{{ whiteSpace }}</text>
-                <image @click="parseAndCompare" :src="playImg" mode="aspectFit" style="width: 40px; height: 40px;" />
+                <image @click="parseAudioPro" :src="playImg" mode="aspectFit" style="width: 40px; height: 40px;" />
             </view>
-            <view class="uni-textarea">
-                <textarea placeholder-style="color:#F76260" :placeholder="voicePath"/>
-            </view>
+            <view class="uni-textarea"><textarea placeholder-style="color:#F76260" :placeholder="voiceText" /></view>
         </view>
     </view>
 </template>
 
 <script>
 import common from '../../common/js/common.js';
-// 获取App录音功能
-uni.authorize({
-    scope: 'scope.record',
-    success() {
-        uni.getRecorderManager();
-    }
-});
+// NOTE: 获取App录音功能, 改为index.vue中进行授权
 
 const recorderManager = uni.getRecorderManager();
+//const recorderManager = wx.getRecorderManager();
 const innerAudioContext = uni.createInnerAudioContext();
 
 innerAudioContext.autoplay = true;
@@ -65,7 +58,8 @@ export default {
             contentIndex: -1,
             chapters: null, // 当前图书章节及内容，从数据库中读取json数据
             curChapterName: 'None',
-            voicePath: 'no file' // 录制音频的文件路径
+            voicePath: '', // 录制音频的文件路径
+            voiceText: 'not yet~' // 百度API识别到的语音文字
         };
     },
     onLoad(e) {
@@ -76,28 +70,48 @@ export default {
 
         // 准备加载录音引擎
         let self = this;
-        recorderManager.onStop(function(res) {
-            console.log('recorder stop' + JSON.stringify(res));
+        recorderManager.onStop(function (res) {
+            console.log('recorder stop:' + JSON.stringify(res));
             self.voicePath = res.tempFilePath;
         });
     },
     methods: {
-        parseAndCompare() {
+        parseAudioPro() {
+            // NOTE: 标记使用百度语音识别的标准版(默认)还是极速版
+            var isBaiDuPro = false;
+            let ARS_URL = "https://vop.baidu.com/server_api"; 
+            // NOTE(普通版)： 1737,英语+无标点; 1536,普通话(支持简单的英文识别)+搜索模型+无标点
+            let DEV_PID = 1737; 
+            
+            if(isBaiDuPro) {
+                //NOTE(极速版)：80001：普通话(纯中文识别)	极速版输入法模型	有标点
+                DEV_PID = 80001;
+                ARS_URL = "https://vop.baidu.com/pro_api";     
+            }
             // 获取录音的转换文字，并比较正确率
             let RATE = 16000;
-            let DEV_PID = 1737; //  1737,英语+无标点; 1536,普通话(支持简单的英文识别)+搜索模型+无标点
-            let FORMAT = 'm4a'; // m4a for mp3, 
+            let FORMAT = 'm4a'; // m4a for mp3,
             let CUID = 'weini-garden-2020';
-            //let AUDIO_FILE = this.voicePath;
-            let AUDIO_FILE = '/static/hello.mp3';
-            console.log("File2Decode:" + this.voicePath);
+            var AUDIO_FILE = this.voicePath;
+            if(this.voicePath) {
+                this.voiceText = this.voicePath;
+                innerAudioContext.src = this.voicePath;
+                innerAudioContext.play();
+            }
+            
+            console.log('parseAudioPro:' + AUDIO_FILE);
+            //let AUDIO_FILE = '/static/16k-48000.m4a';
+            //let AUDIO_FILE = '/static/hello.mp3';
+            //console.log("File2Decode:" + this.voicePath);
             let speech_file = wx.getFileSystemManager().readFileSync(AUDIO_FILE);
+
             console.log('Raw:' + speech_file);
             let length = speech_file.byteLength;
             console.log('Length:' + length);
             let speech = uni.arrayBufferToBase64(speech_file);
-
+            console.log('Base64Speeh:' + speech);
             uni.request({
+                //url: 'https://vop.baidu.com/pro_api',
                 url: 'http://vop.baidu.com/server_api',
                 method: 'POST',
                 header: {
@@ -117,10 +131,16 @@ export default {
                 },
                 success: res => {
                     console.log(res.data);
-                    console.log(res.data.result);
+                    if (res.data.result) {
+                        this.voiceText = res.data.result;
+                    } else {
+                        this.voiceText = JSON.stringify(res.data);
+                    }
+                    console.log(this.voiceText);
                     this.text = 'request success';
                 },
                 fail: result => {
+                    this.voiceText = JSON.stringify(result);
                     console.log('Parse Error:' + result);
                 }
             });
@@ -307,23 +327,28 @@ export default {
         isRecord(val, oldVal) {
             if (val) {
                 // REF: https://uniapp.dcloud.io/api/media/record-manager
-                // REF; https://smartprogram.baidu.com/docs/develop/api/media/recorder_RecorderManager/
-                const options = {
+                // REF: https://smartprogram.baidu.com/docs/develop/api/media/recorder_RecorderManager/
+                var options = {
+                    // 6bit 位深 * 16000 sampleRate = 96000 encodeBitRate
                     //duration: 5000, // 指定录音的时长，单位 ms
                     sampleRate: 16000, // 采样率，有效值 8000/16000(百度仅适用此值！)/44100
                     numberOfChannels: 1, // 录音通道数，有效值 1/2
-                    //encodeBitRate: 24000, // 编码码率
-                    format: 'mp3' // 音频格式，有效值 aac/mp3
+                    encodeBitRate: 96000, // 编码码率（比特率／码率－bitrate，每秒钟用多少比特的数据量去表示）
+                    format: 'm4a' // 音频格式，有效值 aac/mp3
                 };
                 // 编写开始录音的逻辑
                 this.recordImg = '/static/img/record/stop.jpg';
-                recorderManager.start(options);
+                // WARN: 提供options参数在真机模式下有问题，暂不使用。无参数即可满足百度语音识别要求!
+                //recorderManager.start(options);
+                recorderManager.start();
+                
             } else {
                 // 编写结束录音的逻辑
                 this.recordImg = '/static/img/record/play.png';
                 recorderManager.stop();
+                
                 if (this.voicePath) {
-                    console.log(this.voicePath);
+                    console.log('recorderManager.stop:' + this.voicePath);
                 } else {
                     console.log('voicePath is null!');
                 }

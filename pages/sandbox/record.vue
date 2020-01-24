@@ -8,14 +8,6 @@
 
 <script>
 
-    // 获取App录音功能
-    uni.authorize({
-        scope: 'scope.record',
-        success() {
-            uni.getRecorderManager();
-        }
-    })
-
 const recorderManager = uni.getRecorderManager();
 const innerAudioContext = uni.createInnerAudioContext();
 
@@ -47,7 +39,8 @@ export default {
         },
         playVoice() {
             console.log('播放录音');
-
+            console.log(this.voicePath);
+            
             if (this.voicePath) {
                 innerAudioContext.src = this.voicePath;
                 innerAudioContext.play();
