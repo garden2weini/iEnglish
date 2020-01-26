@@ -18,19 +18,24 @@
                 <image @click="hanlerRecord" :src="recordImg" mode="aspectFit" style="width: 40px; height: 40px;" />
                 <!-- Record Audio -->
                 <text space="ensp" decode="true">{{ whiteSpace }}{{ whiteSpace }}{{ whiteSpace }}</text>
-                <image @click="parseAudioPro" :src="playImg" mode="aspectFit" style="width: 40px; height: 40px;" />
+                <image @click="parseAudioPro" :src="recordPlayImg" mode="aspectFit" style="width: 40px; height: 40px;"/>
             </view>
-            <view class="uni-textarea"><textarea placeholder-style="color:#F76260" :placeholder="voiceText" /></view>
+            <view class="story">
+                <text>{{correctRate}}</text>
+            </view>
+            <view class="uni-textarea">
+                <textarea placeholder-style="color:#F76260" :placeholder="voiceText" />
+                <text placeholder-style="color:#F76260" :placeholder="correctRate" />
+            </view>
         </view>
     </view>
 </template>
 
 <script>
 import common from '../../common/js/common.js';
+import txtTools from '../../common/js/tools_text.js';
 // NOTE: 获取App录音功能, 改为index.vue中进行授权
-
 const recorderManager = uni.getRecorderManager();
-//const recorderManager = wx.getRecorderManager();
 const innerAudioContext = uni.createInnerAudioContext();
 
 innerAudioContext.autoplay = true;
@@ -48,7 +53,9 @@ export default {
             totalTime: 0, // 音频总时长
             nowTime: 0, // 音频当前播放时长
             playImg: '/static/img/start.jpg', // 播放或者暂停图片
+            recordPlayImg: '/static/img/record/none.png', // 录音播放的按钮
             isRecord: false, // 是否开始录音
+            isRecorded: false,  // 是否已经录音完毕
             recordImg: '/static/img/record/record.gif',
             cloudContent: 'baidu api, Default data.',
             accessToken: 'baidu api token...',
@@ -59,7 +66,8 @@ export default {
             chapters: null, // 当前图书章节及内容，从数据库中读取json数据
             curChapterName: 'None',
             voicePath: '', // 录制音频的文件路径
-            voiceText: 'not yet~' // 百度API识别到的语音文字
+            voiceText: 'not yet~' ,// 百度API识别到的语音文字
+            correctRate: 'Listening......', // 录音匹配度描述
         };
     },
     onLoad(e) {
@@ -73,15 +81,20 @@ export default {
         recorderManager.onStop(function (res) {
             console.log('recorder stop:' + JSON.stringify(res));
             self.voicePath = res.tempFilePath;
+            self.isRecorded = true;
         });
     },
     methods: {
         parseAudioPro() {
+            if(!this.isRecorded) {
+                return;
+            }
+            
             // NOTE: 标记使用百度语音识别的标准版(默认)还是极速版
             var isBaiDuPro = false;
             let ARS_URL = "https://vop.baidu.com/server_api"; 
             // NOTE(普通版)： 1737,英语+无标点; 1536,普通话(支持简单的英文识别)+搜索模型+无标点
-            let DEV_PID = 1737; 
+            let DEV_PID = 1737;
             
             if(isBaiDuPro) {
                 //NOTE(极速版)：80001：普通话(纯中文识别)	极速版输入法模型	有标点
@@ -111,8 +124,7 @@ export default {
             let speech = uni.arrayBufferToBase64(speech_file);
             console.log('Base64Speeh:' + speech);
             uni.request({
-                //url: 'https://vop.baidu.com/pro_api',
-                url: 'http://vop.baidu.com/server_api',
+                url: ARS_URL,
                 method: 'POST',
                 header: {
                     'content-type': 'application/json'
@@ -136,8 +148,11 @@ export default {
                     } else {
                         this.voiceText = JSON.stringify(res.data);
                     }
+                    var evalResult = txtTools.evaluateRecord(this.storyContent, this.voiceText);
+                    console.log("evalResult:" + evalResult);
+                    this.correctRate = "准确度: "+ (100-evalResult);
                     console.log(this.voiceText);
-                    this.text = 'request success';
+                    //this.text = 'request success';
                 },
                 fail: result => {
                     this.voiceText = JSON.stringify(result);
@@ -341,17 +356,11 @@ export default {
                 // WARN: 提供options参数在真机模式下有问题，暂不使用。无参数即可满足百度语音识别要求!
                 //recorderManager.start(options);
                 recorderManager.start();
-                
+                this.isRecorded = false;
             } else {
                 // 编写结束录音的逻辑
-                this.recordImg = '/static/img/record/play.png';
+                this.recordImg = '/static/img/record/record.gif';
                 recorderManager.stop();
-                
-                if (this.voicePath) {
-                    console.log('recorderManager.stop:' + this.voicePath);
-                } else {
-                    console.log('voicePath is null!');
-                }
             }
         },
         chapters(val, oldVal) {
@@ -366,6 +375,13 @@ export default {
         storyContent(val, oldVal) {
             console.log('CurrentContent:' + val);
             this.updateAudioUrl(val, this.accessToken);
+        },
+        isRecorded(val, oldVal) {
+            if(val) {
+                this.recordPlayImg = '/static/img/record/play.png';
+            } else {
+                this.recordPlayImg = '/static/img/record/none.png';
+            }
         }
     }
 };

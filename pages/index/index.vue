@@ -3,11 +3,11 @@
         <view class="title">Good English 7</view>
         <view>
             <image class="story_column" @click="gotoStroyX('7-1')" src="../../static/img/7-1.jpg" mode="aspectFit" />
-            <image class="story_column" @click="gotoStroy('7-2')" src="../../static/img/7-2.jpg" mode="aspectFit" />
-            <image class="story_column" @click="gotoStroy('7-3')" src="../../static/img/7-3.jpg" mode="aspectFit" />
-            <image class="story_column" @click="gotoStroy('7-4')" src="../../static/img/7-4.jpg" mode="aspectFit" />
-            <image class="story_column" @click="gotoStroy('7-5')" src="../../static/img/7-5.jpg" mode="aspectFit" />
-            <image class="story_column" @click="gotoStroy('7-6')" src="../../static/img/7-6.jpg" mode="aspectFit" />
+            <image class="story_column" @click="gotoStroyX('7-2')" src="../../static/img/7-2.jpg" mode="aspectFit" />
+            <image class="story_column" @click="gotoStroyX('7-3')" src="../../static/img/7-3.jpg" mode="aspectFit" />
+            <image class="story_column" @click="gotoStroyX('7-4')" src="../../static/img/7-4.jpg" mode="aspectFit" />
+            <image class="story_column" @click="gotoStroyX('7-5')" src="../../static/img/7-5.jpg" mode="aspectFit" />
+            <image class="story_column" @click="gotoStroyX('7-6')" src="../../static/img/7-6.jpg" mode="aspectFit" />
             <image class="story_column" @click="gotoStroy('7-7')" src="../../static/img/7-7.jpg" mode="aspectFit" />
             <image class="story_column" @click="gotoStroy('7-8')" src="../../static/img/7-8.jpg" mode="aspectFit" />
             <image class="story_column" @click="gotoStroy('7-9')" src="../../static/img/7-9.jpg" mode="aspectFit" />

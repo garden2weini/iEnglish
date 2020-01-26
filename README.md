@@ -12,9 +12,18 @@ npm install --save baidu-aip-sdk //百度AI依赖
 sudo npm install -g npm
 npm install webpack
 npm install @dcloudio/uni-ui
+# 编辑距离: An efficient Javascript implementation of the Levenshtein algorithm with locale-specific collator support.
+npm install fast-levenshtein
 
 brew install ffmpeg
 ```
+
+## 微信小程序配置
+参考：[微信小程序配置](https://mp.weixin.qq.com/wxamp/devprofile/get_profile)
+添加“request合法域名”，服务器域名请在 「小程序后台-开发-开发设置-服务器域名」 中进行配置，配置后小程序才可以访问如下资源：
+- https://tsn.baidu.com
+- https://vop.baidu.com
+注：
 
 ## Ref
 - [uni-app+云函数](https://www.cnblogs.com/xhxdd/p/12022051.html)

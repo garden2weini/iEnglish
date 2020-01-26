@@ -58,7 +58,7 @@
     /* 小程序特有相关 */
     "mp-weixin" : {
         "appid" : "wx56dda72f065e7c06",
-        "cloudfunctionRoot":"./cloudfunctions/", // 标记云函数目录
+        "cloudfunctionRoot" : "./cloudfunctions/", // 标记云函数目录
         "setting" : {
             "urlCheck" : false
         },
