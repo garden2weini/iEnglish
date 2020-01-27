@@ -13,7 +13,7 @@
 
 <script>
 import common from '../../common/js/common.js';
-import service_stub from '../../common/js/cloud_service.js';
+import service from '../../common/js/cloud_service.js';
 export default {
     data() {
         return {
@@ -143,7 +143,7 @@ export default {
     },
     created() {
         this.testCloud();
-        service_stub.testCloud(testParams);
+        service.testCloud(testParams);
         this.getBaiduToken();
     },
     destroyed() {

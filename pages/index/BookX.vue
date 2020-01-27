@@ -2,9 +2,10 @@
     <view>
         <view class="content">
             <view class="image"><image :src="bookImage" mode="aspectFit" style="width: 200px; height: 200px;" /></view>
-            <view class="story">
-                <h4>#. {{ curChapterName }}</h4>
-                <text>{{ storyContent }}</text>
+            <view class="story" style="height: 160rpx;width: 660rpx;">
+                <text style="font-weight: 600; font-style: italic; color:#F76260;">{{ curChapterName }}</text>
+                <br />
+                <text style="height: 20rpx;width: 660rpx; font-size: 30rpx;">{{ storyContent }}</text>
             </view>
             <view>
                 <button @click="goBack" class="mini-btn" type="primary" size="mini">{{ leftArraw }}</button>
@@ -13,15 +14,15 @@
             </view>
             <view>
                 <!-- Raw Audio -->
-                <image @click="hanlerPaly" :src="playImg" mode="aspectFit" style="width: 40px; height: 40px;" />
+                <image class="button" @click="hanlerPaly" :src="playImg" mode="aspectFit" />
                 <text space="ensp" decode="true">{{ whiteSpace }}{{ whiteSpace }}{{ whiteSpace }}</text>
-                <image @click="hanlerRecord" :src="recordImg" mode="aspectFit" style="width: 40px; height: 40px;" />
+                <image class="button" @click="hanlerRecord" :src="recordImg" mode="aspectFit" />
                 <!-- Record Audio -->
                 <text space="ensp" decode="true">{{ whiteSpace }}{{ whiteSpace }}{{ whiteSpace }}</text>
-                <image @click="parseAudioPro" :src="recordPlayImg" mode="aspectFit" style="width: 40px; height: 40px;"/>
+                <image class="button" @click="parseAudioPro" :src="recordPlayImg" mode="aspectFit" />
             </view>
             <view class="story">
-                <text>{{correctRate}}</text>
+                <text>{{ correctRate }}</text>
             </view>
             <view class="uni-textarea">
                 <textarea placeholder-style="color:#F76260" :placeholder="voiceText" />
@@ -33,7 +34,7 @@
 
 <script>
 import common from '../../common/js/common.js';
-import txtTools from '../../common/js/tools_text.js';
+import evaluator from '../../common/js/tools_text.js';
 // NOTE: 获取App录音功能, 改为index.vue中进行授权
 const recorderManager = uni.getRecorderManager();
 const innerAudioContext = uni.createInnerAudioContext();
@@ -52,13 +53,13 @@ export default {
             sliderProgress: 0, // 滑动控制条进度
             totalTime: 0, // 音频总时长
             nowTime: 0, // 音频当前播放时长
-            playImg: '/static/img/start.jpg', // 播放或者暂停图片
+            playImg: '/static/img/start.png', // 播放或者暂停图片
             recordPlayImg: '/static/img/record/none.png', // 录音播放的按钮
             isRecord: false, // 是否开始录音
-            isRecorded: false,  // 是否已经录音完毕
-            recordImg: '/static/img/record/record.gif',
+            isRecorded: false, // 是否已经录音完毕
+            recordImg: '/static/img/record/record.png',
             cloudContent: 'baidu api, Default data.',
-            accessToken: 'baidu api token...',
+            accessToken: null,
             bookImage: '/static/logo.png',
             curBook: '', // 当前图书编号，即库表名称
             chapterIndex: -1,
@@ -66,8 +67,8 @@ export default {
             chapters: null, // 当前图书章节及内容，从数据库中读取json数据
             curChapterName: 'None',
             voicePath: '', // 录制音频的文件路径
-            voiceText: 'not yet~' ,// 百度API识别到的语音文字
-            correctRate: 'Listening......', // 录音匹配度描述
+            voiceText: '', // 百度API识别到的语音文字
+            correctRate: 'Listening......' // 录音匹配度描述
         };
     },
     onLoad(e) {
@@ -78,7 +79,7 @@ export default {
 
         // 准备加载录音引擎
         let self = this;
-        recorderManager.onStop(function (res) {
+        recorderManager.onStop(function(res) {
             console.log('recorder stop:' + JSON.stringify(res));
             self.voicePath = res.tempFilePath;
             self.isRecorded = true;
@@ -86,32 +87,32 @@ export default {
     },
     methods: {
         parseAudioPro() {
-            if(!this.isRecorded) {
+            if (!this.isRecorded) {
                 return;
             }
-            
+
             // NOTE: 标记使用百度语音识别的标准版(默认)还是极速版
             var isBaiDuPro = false;
-            let ARS_URL = "https://vop.baidu.com/server_api"; 
+            let ARS_URL = 'https://vop.baidu.com/server_api';
             // NOTE(普通版)： 1737,英语+无标点; 1536,普通话(支持简单的英文识别)+搜索模型+无标点
             let DEV_PID = 1737;
-            
-            if(isBaiDuPro) {
+
+            if (isBaiDuPro) {
                 //NOTE(极速版)：80001：普通话(纯中文识别)	极速版输入法模型	有标点
                 DEV_PID = 80001;
-                ARS_URL = "https://vop.baidu.com/pro_api";     
+                ARS_URL = 'https://vop.baidu.com/pro_api';
             }
             // 获取录音的转换文字，并比较正确率
             let RATE = 16000;
             let FORMAT = 'm4a'; // m4a for mp3,
             let CUID = 'weini-garden-2020';
             var AUDIO_FILE = this.voicePath;
-            if(this.voicePath) {
-                this.voiceText = this.voicePath;
+            if (this.voicePath) {
+                //this.voiceText = this.voicePath;
                 innerAudioContext.src = this.voicePath;
                 innerAudioContext.play();
             }
-            
+
             console.log('parseAudioPro:' + AUDIO_FILE);
             //let AUDIO_FILE = '/static/16k-48000.m4a';
             //let AUDIO_FILE = '/static/hello.mp3';
@@ -148,9 +149,9 @@ export default {
                     } else {
                         this.voiceText = JSON.stringify(res.data);
                     }
-                    var evalResult = txtTools.evaluateRecord(this.storyContent, this.voiceText);
-                    console.log("evalResult:" + evalResult);
-                    this.correctRate = "准确度: "+ (100-evalResult);
+                    var evalResult = evaluator.evaluateRecord(this.storyContent, this.voiceText);
+                    console.log('evalResult:' + evalResult);
+                    this.correctRate = '准确度: ' + (100 - evalResult);
                     console.log(this.voiceText);
                     //this.text = 'request success';
                 },
@@ -208,7 +209,6 @@ export default {
                 env: 'weini-home-b5ggv'
             });
             // 2. 构造查询语句(NOTE:每次只能获取20条记录)
-            //console.log('TableName:' + bookTable);
             db.collection(bookTable)
                 .where({
                     //chapter: _.gte(1) // 大于或等于(>=)
@@ -221,7 +221,7 @@ export default {
                 .get({
                     success: function(res) {
                         self.chapters = res.data;
-                        console.log(self.chapters);
+                        //console.log(self.chapters);
                     }
                 });
         },
@@ -232,6 +232,8 @@ export default {
         hanlerRecord() {
             // 录音暂停
             this.isRecord = !this.isRecord;
+            this.correctRate = 'Listening......';
+            this.voiceText = '';
         },
         getBaiduToken() {
             // 通过调用云函数获得baidu access token
@@ -250,12 +252,11 @@ export default {
                             title: '温馨提示',
                             content: '获取语音失败！'
                         });
-                        //return
                         this.accessToken = 'Ops!';
                     } else {
                         this.accessToken = res.result.token;
-                        //this.buildAudioUrl(this.storyContent, this.accessToken);
                     }
+                    //console.log("getBaiduToken:" +this.accessToken);
                 });
         },
         initAudioContext() {
@@ -284,11 +285,12 @@ export default {
                 this.sliderProgress = ((currentTime * 1000000) / (duration * 1000000)) * 100;
             });
         },
-        updateAudioUrl(storyContent, accessToken) {
-            // 设置音频播放来源
+        updateAudioUrl(_storyContent) {
+            // 设置音频播放来源. 
+            // NOTE: 此方法仅在用户点击播放StoryContent时调用，最大限度保证Baidu Access Token已经获取到
             var param = {
-                tex: storyContent,
-                tok: accessToken,
+                tex: _storyContent,
+                tok: this.accessToken,
                 spd: 5, // 语速，取值0-15，默认为5中语速
                 pit: 5, // 音调，取值0-15，默认为5中语调
                 vol: 15, // 音量，取值0-15，默认为5中音量
@@ -296,7 +298,7 @@ export default {
                 per: 5 // 精品音库 度博文=106，度小童=110，度小萌=111，度米朵=103，度小娇=5
                 //aue: 3, // 3为mp3格式(默认), 4为pcm-16k, 5为pcm-8k, 6为wav（内容同pcm-16k）
             };
-
+            
             // 创建form参数
             var data = {};
             for (var p in param) {
@@ -317,7 +319,6 @@ export default {
             var tail = fd.join('&');
             var fullUrl = 'https://tsn.baidu.com/text2audio?' + tail;
             this.innerAudioContext.src = fullUrl;
-            //console.log(fullUrl)
         }
     },
     created() {
@@ -332,10 +333,12 @@ export default {
         isPlay(val, oldVal) {
             this.innerAudioContext.offCanplay();
             if (val) {
-                this.playImg = '/static/img/stop.jpg';
+                this.playImg = '/static/img/stop.png';
+                this.updateAudioUrl(this.storyContent);
                 this.innerAudioContext.play();
+                //console.log('play content:' + this.innerAudioContext.src);
             } else {
-                this.playImg = '/static/img/start.jpg';
+                this.playImg = '/static/img/start.png';
                 this.innerAudioContext.pause();
             }
         },
@@ -352,32 +355,29 @@ export default {
                     format: 'm4a' // 音频格式，有效值 aac/mp3
                 };
                 // 编写开始录音的逻辑
-                this.recordImg = '/static/img/record/stop.jpg';
+                this.recordImg = '/static/img/record/stop.png';
                 // WARN: 提供options参数在真机模式下有问题，暂不使用。无参数即可满足百度语音识别要求!
                 //recorderManager.start(options);
                 recorderManager.start();
                 this.isRecorded = false;
             } else {
                 // 编写结束录音的逻辑
-                this.recordImg = '/static/img/record/record.gif';
+                this.recordImg = '/static/img/record/record.png';
                 recorderManager.stop();
             }
         },
         chapters(val, oldVal) {
             // NOTE: 获取到章节及内容后，进行初始化逻辑
-            //console.log(val);
             this.chapterIndex = 0;
             this.contentIndex = 0;
             this.curChapterName = val[this.chapterIndex].name;
             this.storyContent = val[this.chapterIndex].contents[this.contentIndex].content;
-            this.updateAudioUrl(this.storyContent, this.accessToken);
         },
         storyContent(val, oldVal) {
             console.log('CurrentContent:' + val);
-            this.updateAudioUrl(val, this.accessToken);
         },
         isRecorded(val, oldVal) {
-            if(val) {
+            if (val) {
                 this.recordPlayImg = '/static/img/record/play.png';
             } else {
                 this.recordPlayImg = '/static/img/record/none.png';
@@ -405,5 +405,10 @@ export default {
     margin-top: 10px;
     margin-left: 10px;
     margin-right: 1px;
+}
+.button {
+    width: 40px;
+    height: 40px;
+    background-color: #ffffff;
 }
 </style>

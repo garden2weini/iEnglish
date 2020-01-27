@@ -8,6 +8,7 @@ import (
 	"os"
 )
 
+// ReadLine from a file.
 func ReadLine(filePth string, hookfn func([]byte)) error {
 	f, err := os.Open(filePth)
 	if err != nil {
@@ -29,7 +30,7 @@ func ReadLine(filePth string, hookfn func([]byte)) error {
 	return nil
 }
 
-//使用ioutil.WriteFile方式写入文件,是将[]byte内容写入文件,如果content字符串中没有换行符的话，默认就不会有换行符
+// WriteWithIoutil 使用ioutil.WriteFile方式写入文件, 是将[]byte内容写入文件,如果content字符串中没有换行符的话, 默认就不会有换行符.
 func WriteWithIoutil(name, content string) {
 	data := []byte(content)
 	if ioutil.WriteFile(name, data, 0644) == nil {
@@ -37,7 +38,7 @@ func WriteWithIoutil(name, content string) {
 	}
 }
 
-//使用io.WriteString()函数进行数据的写入
+// WriteWithIo 使用io.WriteString()函数进行数据的写入
 func WriteWithIo(name, content string) {
 	fileObj, err := os.OpenFile(name, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
 	if err != nil {
@@ -46,7 +47,7 @@ func WriteWithIo(name, content string) {
 	}
 	if _, err := io.WriteString(fileObj, content); err == nil {
 		//fmt.Println("Successful appending to the file with os.OpenFile and io.WriteString.", content)
-		fmt.Println("Successful appending to the file with os.OpenFile and io.WriteString.")
+		fmt.Println("Successful appending to the file.")
 	}
 }
 

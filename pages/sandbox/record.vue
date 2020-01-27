@@ -7,7 +7,6 @@
 </template>
 
 <script>
-
 const recorderManager = uni.getRecorderManager();
 const innerAudioContext = uni.createInnerAudioContext();
 

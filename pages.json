@@ -41,6 +41,12 @@
             "style": {
                 "navigationBarTitleText": "sandbox-text"
             }
+        },
+        {
+            "path": "pages/sandbox/tryit",
+            "style": {
+                "navigationBarTitleText": "try it"
+            }
         }
 
     ],

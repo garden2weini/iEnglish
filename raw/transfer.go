@@ -19,14 +19,14 @@ var uidIndex int16
 
 type Chapter struct {
 	ChapterID int       `json:"chapter,int"`
-	Name      string    `json:"name,string"`
+	Name      string    `json:"name"`
 	BookName  string    `json:"book,int"`
 	Contents  []Content `json:"contents"`
 }
 type Content struct {
 	UID int16 `json:"uid,int16"`
 	//ChapterID int    `json:"chapter_id,int"`
-	Content string `json:"content,string"`
+	Content string `json:"content"`
 }
 
 func processLine(line []byte) {
@@ -34,7 +34,7 @@ func processLine(line []byte) {
 	txt = strings.Replace(txt, "\n", "", -1)
 
 	if strings.Index(txt, "#") == 0 {
-		fmt.Println("Title...:" + txt)
+		fmt.Println("Title:" + txt)
 		return
 	}
 	head := txt[0:1]
@@ -49,11 +49,13 @@ func processLine(line []byte) {
 		n, _ := strconv.Atoi(head)
 		curChapter.ChapterID = n
 		curChapter.BookName = curBookNum
-		curChapter.Name = txt
+		//curChapter.Name = txt
+		curChapter.Name = strings.Trim(txt, "\r")
 	} else {
 		content := &Content{}
 		content.UID = uidIndex
-		content.Content = txt
+		// content.Content = txt
+		content.Content = strings.Trim(txt, "\r")
 		if curChapter.Contents == nil {
 			curChapter.Contents = []Content{}
 		}
@@ -71,14 +73,15 @@ func main() {
 		"7-1": "Walrus Joins In",
 		"7-2": "Noisy Neibours",
 		"7-3": "Princess Pip's Holiday",
-		"7-4": "Oh Otto!", "7-5": "Captain Comet and The Purple Planet",
+		"7-4": "Oh Otto!", 
+		"7-5": "Captain Comet and The Purple Planet",
 		// "7-6": "Jungle Shorts", "7-7": "The Masked Cleaning Ladies of Om",
 		//"7-8": "The Masked Cleaning Ladies Save the Day", "7-9": "The Masked Cleaning Ladies Meet the Pirates", "7-10": "Jellyfish Shoes", "7-11": "The Boss Dog of Blossom Street",
 		//"7-12": "Cornflake Coin", "7-13": "The Ghost Ship", "7-14": "Micro the Metal Dog", "7-15": "The King of Football",
 		//"7-16": "Arctic Hero", "7-17": "Pioneer Gir!", "7-18": "My Friend, Mandela",
 	}
 	buildMultiJsons(books)
-	//buildAllInOneJson(books)
+	buildAllInOneJson(books)
 }
 
 func buildAllInOneJson(books map[string]string) {
@@ -88,7 +91,6 @@ func buildAllInOneJson(books map[string]string) {
 		chapters = chapters[0:0]
 		uidIndex = 1
 		curBookNum = k
-		//v = strings.Replace(v, " ", "-", -1) + ".txt"
 		fileName := k + ".txt"
 
 		//fmt.Printf("k:[%v].v:[%v]\n", k, fileName) // 输出k,v值
@@ -101,13 +103,14 @@ func buildAllInOneJson(books map[string]string) {
 			result = result + string(data)
 		}
 
-		result = strings.Replace(result, "\\\"", "", -1)
+		result = replaceContent(result)
 		WriteWithIo(outputFile, result)
 		// 清空缓存
 		curChapter = nil
 	}
 }
 
+// buildMultiJsons 分文件生成各书的json
 func buildMultiJsons(books map[string]string) {
 
 	for k, _ := range books {
@@ -127,16 +130,15 @@ func buildMultiJsons(books map[string]string) {
 			result = result + string(data)
 		}
 
-		//fmt.Println(string(data))
-		//data, _ = json.Marshal(contents)
-		//result = result + string(data)
-		result = strings.Replace(result, "\\\"", "", -1)
-		//result = strings.Replace(result, "\\r,", "", -1)
-		//result = strings.Replace(result, "[", "", -1)
-		//result = strings.Replace(result, "]", "", -1)
-		//result = strings.Replace(result, "},", "}", -1)
+		result = replaceContent(result)
 		WriteWithIo(curBook, result)
 		// 清空缓存
 		curChapter = nil
 	}
+}
+
+func replaceContent(content string) string {
+	content = strings.Replace(content, "‘", "'", -1)
+	content = strings.Replace(content, "’", "'", -1)
+	return content
 }
