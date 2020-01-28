@@ -1,17 +1,14 @@
 <template>
-    <view></view>
+    <view>
+        
+    </view>
 </template>
 
 <script>
-    export default {
-        data() {
-            return {
-                text: 'uni-app',
-                voicePath: '',
-            }
-        },
-    }
+    
 </script>
 
-<style>
+<style scoped>
+    
+    
 </style>

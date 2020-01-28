@@ -1,6 +1,6 @@
 {
     "name" : "iSpeakEnglish",
-    "appid" : "__UNI__7E10040",
+    "appid" : "", //"__UNI__7E10040",
     "description" : "",
     "versionName" : "1.0.0",
     "versionCode" : "100",
@@ -60,7 +60,8 @@
         "appid" : "wx56dda72f065e7c06",
         "cloudfunctionRoot" : "./cloudfunctions/", // 标记云函数目录
         "setting" : {
-            "urlCheck" : false
+            "urlCheck" : false,
+            "minified" : false
         },
         "usingComponents" : true
     },

@@ -33,8 +33,9 @@
 </template>
 
 <script>
-import common from '../../common/js/common.js';
-import evaluator from '../../common/js/tools_text.js';
+import common from '@/common/js/common.js';
+import evaluator from '@/common/js/tools_text.js';
+
 // NOTE: 获取App录音功能, 改为index.vue中进行授权
 const recorderManager = uni.getRecorderManager();
 const innerAudioContext = uni.createInnerAudioContext();
@@ -74,7 +75,7 @@ export default {
     onLoad(e) {
         // 准备加载图书数据
         this.curBook = e.book;
-        this.bookImage = '/static/img/' + e.book + '.jpg';
+        this.bookImage = '/static/img/book/' + e.book + '.jpg';
         this.getChapters(this.curBook);
 
         // 准备加载录音引擎

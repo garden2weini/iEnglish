@@ -19,30 +19,6 @@
             }
         },
         {
-            "path": "pages/goodenglish7/NoisyNeighbours",
-            "style": {
-                "navigationBarTitleText": "Noisy Neighbours"
-            }
-        },
-        {
-            "path": "pages/sandbox/radio",
-            "style": {
-                "navigationBarTitleText": "sandbox-radio"
-            }
-        },
-        {
-            "path": "pages/sandbox/record",
-            "style": {
-                "navigationBarTitleText": "sandbox-record"
-            }
-        },
-        {
-            "path": "pages/sandbox/text",
-            "style": {
-                "navigationBarTitleText": "sandbox-text"
-            }
-        },
-        {
             "path": "pages/sandbox/tryit",
             "style": {
                 "navigationBarTitleText": "try it"
