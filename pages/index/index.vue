@@ -46,14 +46,7 @@
             uni.getRecorderManager();
         }
     })
-/*
-wx.authorize({
-   scope: 'scope.record',
-   success: res=>{
-      console.log(res);
-   }
-})
-*/
+    
 export default {
     data() {
         return {

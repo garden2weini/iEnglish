@@ -2,8 +2,12 @@
 
 ## TODO List
 [] 图书的每一页加上页码；
-[] 语音识别不够准确（，可以考虑通过百度语音的词库改善）；
-[] 返回以往页时，如果已经有录音，可以播放最近的录音；
+[] 语音识别不够准确（没什么办法估计）；
+[] 返回以往页时，如果已经有录音，可以播放最近的录音（前提；分用户保存）；
+- 先从本地缓存find file name：uni.getStorageSync('storage_key');
+- file name is null--直接录音；not null--从storage中照对应的文件
+[] 录音过关（至少一星）可以下一句；
+[] 
 
 ## Prepare
 ```
@@ -23,20 +27,31 @@ npm install fast-levenshtein
 brew install ffmpeg
 ```
 
-## 微信小程序配置
-参考：[微信小程序配置](https://mp.weixin.qq.com/wxamp/devprofile/get_profile)
-添加“request合法域名”，服务器域名请在 「小程序后台-开发-开发设置-服务器域名」 中进行配置，配置后小程序才可以访问如下资源：
-- https://tsn.baidu.com
-- https://vop.baidu.com
-注：
-
 ## Ref
 - [uni-app+云函数](https://www.cnblogs.com/xhxdd/p/12022051.html)
 - [百度语音识别](https://ai.baidu.com/ai-doc/SPEECH/Vk38lxily)
 - [小程序云函数调用API接口的方法](https://www.jb51.net/article/161434.htm)
 - [uni-app 全局变量的几种实现方式](https://blog.csdn.net/Mrchai521/article/details/89348881)
 - [百度-开发智能小程序](https://smartprogram.baidu.com/docs/develop/api/media/recorder_RecorderManager/)
-- 
+- [微信登录](https://developers.weixin.qq.com/miniprogram/dev/framework/open-ability/login.html)
+
+### 知识点
+- rpx 即响应式px，一种根据屏幕宽度自适应的动态单位。以750宽的屏幕为基准，750rpx恰好为屏幕宽度。屏幕变宽，rpx 实际显示效果会等比放大。
+
+## FAQ
+### 微信小程序配置合法域名
+参考：[微信小程序配置](https://mp.weixin.qq.com/wxamp/devprofile/get_profile)
+添加“request合法域名”，服务器域名请在 「小程序后台-开发-开发设置-服务器域名」 中进行配置，配置后小程序才可以访问如下资源：
+- https://tsn.baidu.com
+- https://vop.baidu.com
+
+### 微信小程序开发获取AppID 和 AppSecret
+1 进入https://mp.weixin.qq.com 登录
+2 左侧菜单选择【开发】
+3 右侧tab选择【开发设置】
+4 AppSecret栏右侧点击重置
+会弹出一个二维码，需要开发者扫描二维码才可以重置AppSecret。出现AppSecret后点击复制，并保存你的AppSecret。
+
 ### uni-app 引入本地iconfont的正确姿势
 iconfont文件里面包含 iconfont.ttf、iconfont.css， 将 iconfont.ttf文件转位 base64。
 推荐转换工具地址：https://www.giftofspeed.com/base64-encoder/
@@ -65,7 +80,3 @@ iconfont文件里面包含 iconfont.ttf、iconfont.css， 将 iconfont.ttf文件
 
 备注：
 iconfont文件是使用的阿里图标库： https://www.iconfont.cn
-
-## 知识点
-- rpx 即响应式px，一种根据屏幕宽度自适应的动态单位。以750宽的屏幕为基准，750rpx恰好为屏幕宽度。屏幕变宽，rpx 实际显示效果会等比放大。
-

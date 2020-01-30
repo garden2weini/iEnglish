@@ -1,5 +1,6 @@
 const path = require('path')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
+const webpack = require('webpack')
 
 module.exports = {
     configureWebpack: {
@@ -12,5 +13,15 @@ module.exports = {
                 }
             ])
         ]
-    }
+    },
+    // NOTE: 尝试解决如下问题--Cannot read property 'call' of undefined
+    configureWebpack: {
+            plugins: [
+                new webpack.ProvidePlugin({
+                    //chunks: ['manifest', 'vendor', pathname],
+                    chunks: ['manifest', 'vendor'],
+                    chunksSortMode: 'manual',
+                })
+            ]
+        }
 }

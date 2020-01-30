@@ -19,7 +19,7 @@
                 <image class="button" @click="hanlerRecord" :src="recordImg" mode="aspectFit" />
                 <!-- Record Audio -->
                 <text space="ensp" decode="true">{{ whiteSpace }}{{ whiteSpace }}{{ whiteSpace }}</text>
-                <image class="button" @click="parseAudioPro" :src="recordPlayImg" mode="aspectFit" />
+                <image class="button" @click="playRecorded" :src="recordPlayImg" mode="aspectFit" />
             </view>
             <view class="story">
                 <!--<text>{{ correctRate }}</text>-->
@@ -55,6 +55,7 @@ export default {
             star3: 'star',
             starColor: 'grey',
             whiteSpace: '&nbsp;&nbsp;&nbsp;',
+            isParsedRecord: false, // 是否已经进行过录音的识别
             leftArraw: '<',
             rightArraw: '>',
             storyContent: 'None',
@@ -67,6 +68,7 @@ export default {
             recordPlayImg: '/static/img/record/none.png', // 录音播放的按钮
             isRecord: false, // 是否开始录音
             isRecorded: false, // 是否已经录音完毕
+            isPlayRecorded: false, // 是否已经点击录音播放
             recordImg: '/static/img/record/record.png',
             cloudContent: 'baidu api, Default data.',
             accessToken: null,
@@ -103,12 +105,28 @@ export default {
             this.star3 = 'star';
             this.voiceText = '';
             this.isRecorded = false;
+            this.isPlayRecorded = false;
+            this.isParsedRecord = false;
         },
-        parseAudioPro() {
+        playRecorded() {
             if (!this.isRecorded) {
                 return;
             }
-
+            
+            this.isPlayRecorded = !this.isPlayRecorded;
+            
+            if (this.voicePath) {
+                this.innerAudioContext.src = this.voicePath;
+            }
+            
+            if(this.isParsedRecord) {
+                //
+            } else {
+                this.isParsedRecord = true;
+                this.parseAudioPro();
+            }
+        },
+        parseAudioPro() {
             // NOTE: 标记使用百度语音识别的标准版(默认)还是极速版
             var isBaiDuPro = false;
             let ARS_URL = 'https://vop.baidu.com/server_api';
@@ -125,11 +143,7 @@ export default {
             let FORMAT = 'm4a'; // m4a for mp3,
             let CUID = 'weini-garden-2020';
             var AUDIO_FILE = this.voicePath;
-            if (this.voicePath) {
-                innerAudioContext.src = this.voicePath;
-                innerAudioContext.play();
-            }
-
+            
             console.log('parseAudioPro:' + AUDIO_FILE);
             
             let speech_file = wx.getFileSystemManager().readFileSync(AUDIO_FILE);
@@ -311,12 +325,14 @@ export default {
             // 音频进入可以播放状态
             this.innerAudioContext.onCanplay(res => {
                 this.isPlay = false;
+                this.isPlayRecorded = false;
             });
             // 音频自然播放结束事件
             this.innerAudioContext.onEnded(res => {
                 // 当音频播放结束后，将滑动条滑到末尾
                 this.sliderProgress = 100;
                 this.isPlay = false;
+                this.isPlayRecorded = false;
             });
             // 音频播放中
             this.innerAudioContext.onTimeUpdate(res => {
@@ -375,6 +391,16 @@ export default {
         this.innerAudioContext.destroy();
     },
     watch: {
+        isPlayRecorded(val, oldVal) {
+            this.innerAudioContext.offCanplay();
+            if (val) {
+                this.recordPlayImg = '/static/img/record/pause.png';
+                this.innerAudioContext.play();
+            } else {
+                this.recordPlayImg = '/static/img/record/play.png';
+                this.innerAudioContext.pause();
+            }
+        },
         isPlay(val, oldVal) {
             this.innerAudioContext.offCanplay();
             if (val) {
