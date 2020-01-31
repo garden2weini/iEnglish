@@ -34,7 +34,6 @@
 
 <script>
 import common from '@/common/js/common.js';
-import evaluator from '@/common/js/tools_text.js';
 
 // NOTE: 获取App录音功能, 改为index.vue中进行授权
 const recorderManager = uni.getRecorderManager();
@@ -150,7 +149,7 @@ export default {
                     } else {
                         this.voiceText = JSON.stringify(res.data);
                     }
-                    var evalResult = evaluator.evaluateRecord(this.storyContent, this.voiceText);
+                    var evalResult = common.evaluateRecord(this.storyContent, this.voiceText);
                     console.log('evalResult:' + evalResult);
                     this.correctRate = '准确度: ' + (100 - evalResult);
                     console.log(this.voiceText);

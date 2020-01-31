@@ -36,9 +36,9 @@
 </template>
 
 <script>
-import uniIcon from '@/components/uni-icons/uni-icons.vue';
+import uniIcon from '../../components/uni-icons/uni-icons.vue';
 import common from '@/common/js/common.js';
-import evaluator from '@/common/js/tools_text.js';
+import wxCloud from '@/common/js/cloud_service.js';
 
 // NOTE: 获取App录音功能, 改为index.vue中进行授权
 const recorderManager = uni.getRecorderManager();
@@ -80,6 +80,7 @@ export default {
             curChapterName: 'None',
             voicePath: '', // 录制音频的文件路径
             voiceText: '', // 百度API识别到的语音文字
+            cloudFileId: '', // WX cloud storage file id.
             //correctRate: 'Listening......' // 录音匹配度描述
         };
     },
@@ -152,7 +153,7 @@ export default {
             let length = speech_file.byteLength;
             console.log('Length:' + length);
             let speech = uni.arrayBufferToBase64(speech_file);
-            console.log('Base64Speeh:' + speech);
+            //console.log('Base64Speeh:' + speech);
             uni.request({
                 url: ARS_URL,
                 method: 'POST',
@@ -178,7 +179,7 @@ export default {
                     } else {
                         this.voiceText = JSON.stringify(res.data);
                     }
-                    var evalResult = evaluator.evaluateRecord(this.storyContent, this.voiceText);
+                    var evalResult = common.evaluateRecord(this.storyContent, this.voiceText);
                     console.log('evalResult:' + evalResult);
                     evalResult = 100 - evalResult;
                     //this.correctRate = '准确度: ' + (100 - evalResult);
@@ -205,6 +206,10 @@ export default {
                         this.star1 = 'star-filled'; //star, starhalf, star-filled
                         this.star2 = 'star-filled';
                         this.star3 = 'star-filled';
+                    }
+                    if(evalResult > 50) {
+                        // 只要录音质量可以标星，则保存到云存储
+                        this.cloudFileId = wxCloud.uploadFile2WxCloud(this.voicePath, this.RecordFile(this.curBook, this.chapterIndex, this.contentIndex));
                     }
                     console.log(this.voiceText);
                     
@@ -263,7 +268,7 @@ export default {
             var self = this;
             // 1. 获取数据库引用
             const db = wx.cloud.database({
-                env: 'weini-home-b5ggv'
+                env: this.Database,
             });
             // 2. 构造查询语句(NOTE:每次只能获取20条记录)
             db.collection(bookTable)

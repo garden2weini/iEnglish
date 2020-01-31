@@ -1,6 +1,7 @@
 <template>
     <!-- WX: Get UserInfo. -->
     <!-- https://developers.weixin.qq.com/community/develop/doc/0000a26e1aca6012e896a517556c01 -->
+    <!-- https://developers.weixin.qq.com/miniprogram/dev/api/open-api/user-info/wx.getUserInfo.html -->
     <view>
         <open-data type="userGender" lang="zh_CN"></open-data>
         <br />
