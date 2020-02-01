@@ -15,6 +15,13 @@
             <uni-icon type="star" size="30" color="blue" @click="test"></uni-icon>
             <uni-icon type="star-filled" size="30" color="gold" @click="test"></uni-icon>
             <uni-icon type="sound" size="30" color="gold" @click="test"></uni-icon>
+            <uni-icon :type="playIcon.type" size="30" :color="playIcon.color" @click="hanlerPaly" />
+            <uni-icon type="sound" size="30" color="grey" @click="test" />
+            <uni-icon type="sound-filled" size="30" color="black" @click="test" />
+            <uni-icon type="headphones" size="30" color="grey" @click="test" />
+            <uni-icon type="headphones" size="30" color="black" @click="test" />
+            <uni-icon type="mic" size="30" color="grey" @click="test" />
+            <uni-icon type="mic-filled" size="30" color="black" @click="test" />
         </view>
         <view>
             <uni-icon type="" class="iconfont icon-search"></uni-icon>
@@ -29,6 +36,14 @@
     export default {
         components: {
             uniIcon
+        },
+        data() {
+            return {
+                playIcon: { //
+                    type: 'sound',
+                    color: 'grey'
+                },
+            }
         },
         methods: {
             test() {

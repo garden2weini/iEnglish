@@ -14,12 +14,12 @@
             </view>
             <view>
                 <!-- Raw Audio -->
-                <image class="button" @click="hanlerPaly" :src="playImg" mode="aspectFit" />
+                <uni-icon :type="playIcon.type" size="30" :color="playIcon.color" @click="hanlerPaly" />
                 <text space="ensp" decode="true">{{ whiteSpace }}{{ whiteSpace }}{{ whiteSpace }}</text>
-                <image class="button" @click="hanlerRecord" :src="recordImg" mode="aspectFit" />
+                <uni-icon :type="recordIcon.type" size="30" :color="recordIcon.color" @click="hanlerRecord" />
                 <!-- Record Audio -->
                 <text space="ensp" decode="true">{{ whiteSpace }}{{ whiteSpace }}{{ whiteSpace }}</text>
-                <image class="button" @click="playRecorded" :src="recordPlayImg" mode="aspectFit" />
+                <uni-icon :type="playRecordedIcon.type" size="30" :color="playRecordedIcon.color" @click="playRecorded" />
             </view>
             <view class="story">
                 <!--<text>{{ correctRate }}</text>-->
@@ -65,11 +65,23 @@ export default {
             totalTime: 0, // 音频总时长
             nowTime: 0, // 音频当前播放时长
             playImg: '/static/img/start.png', // 播放或者暂停图片
+            playIcon: { //
+                type: 'sound-filled',
+                color: 'black'
+            },
             recordPlayImg: '/static/img/record/none.png', // 录音播放的按钮
+            playRecordedIcon:  { //
+                type: 'headphones',
+                color: 'white'
+            },
             isRecord: false, // 是否开始录音
             isRecorded: false, // 是否已经录音完毕
             isPlayRecorded: false, // 是否已经点击录音播放
             recordImg: '/static/img/record/record.png',
+            recordIcon: { //
+                type: 'mic-filled',
+                color: 'black'
+            },
             cloudContent: 'baidu api, Default data.',
             accessToken: null,
             bookImage: '/static/logo.png',
@@ -400,9 +412,17 @@ export default {
             this.innerAudioContext.offCanplay();
             if (val) {
                 this.recordPlayImg = '/static/img/record/pause.png';
+                this.playRecordedIcon = { //
+                    type: 'headphones',
+                    color: 'grey'
+                };
                 this.innerAudioContext.play();
             } else {
                 this.recordPlayImg = '/static/img/record/play.png';
+                this.playRecordedIcon = { //
+                    type: 'headphones',
+                    color: 'black'
+                };
                 this.innerAudioContext.pause();
             }
         },
@@ -410,11 +430,19 @@ export default {
             this.innerAudioContext.offCanplay();
             if (val) {
                 this.playImg = '/static/img/stop.png';
+                this.playIcon = { 
+                    type: 'sound',
+                    color: 'grey'
+                };
                 this.updateAudioUrl(this.storyContent);
                 this.innerAudioContext.play();
                 //console.log('play content:' + this.innerAudioContext.src);
             } else {
                 this.playImg = '/static/img/start.png';
+                this.playIcon = {
+                    type: 'sound-filled',
+                    color: 'black'
+                };
                 this.innerAudioContext.pause();
             }
         },
@@ -432,6 +460,10 @@ export default {
                 };
                 // 编写开始录音的逻辑
                 this.recordImg = '/static/img/record/stop.png';
+                this.recordIcon = { //
+                    type: 'micoff',
+                    color: 'grey'
+                };
                 // WARN: 提供options参数在真机模式下有问题，暂不使用。无参数即可满足百度语音识别要求!
                 //recorderManager.start(options);
                 recorderManager.start();
@@ -439,6 +471,10 @@ export default {
             } else {
                 // 编写结束录音的逻辑
                 this.recordImg = '/static/img/record/record.png';
+                this.recordIcon = { //
+                    type: 'mic-filled',
+                    color: 'black'
+                };
                 recorderManager.stop();
             }
         },
@@ -455,8 +491,16 @@ export default {
         isRecorded(val, oldVal) {
             if (val) {
                 this.recordPlayImg = '/static/img/record/play.png';
+                this.playRecordedIcon = { //
+                    type: 'headphones',
+                    color: 'black'
+                };
             } else {
                 this.recordPlayImg = '/static/img/record/none.png';
+                this.playRecordedIcon = { //
+                    type: 'headphones',
+                    color: 'white'
+                };
             }
         }
     }
@@ -485,6 +529,11 @@ export default {
 .button {
     width: 40px;
     height: 40px;
+    background-color: #ffffff;
+}
+.button1 {
+    width: 30px;
+    height: 30px;
     background-color: #ffffff;
 }
 </style>

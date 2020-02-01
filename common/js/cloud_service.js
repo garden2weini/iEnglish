@@ -18,9 +18,9 @@ function userRecordFileMap(database) {
     const db = wx.cloud.database({
         env: database,
     });
-    console.log("Get File Map for openid");
+    //console.log("Get File Map for openid");
     var openid = wx.getStorageSync('OPENID');
-    console.log("Get File Map for " + openid);
+    //console.log("Get File Map for " + openid);
     // 2. 构造查询语句(NOTE:每次只能获取20条记录)
     db.collection('UserRecordFile')
         .where({
@@ -35,8 +35,8 @@ function userRecordFileMap(database) {
                     for (var i = 0; i < files.length; i++) {
                         try {
                             var filemap = files[i];
-                            console.log("FileID:" + filemap.FileID);
-                            console.log("RecordFilePath:" + filemap.RecordFilePath);
+                            console.log('FileID:' + filemap.FileID);
+                            console.log('RecordFilePath:' + filemap.RecordFilePath);
                             wx.setStorageSync(filemap.RecordFilePath, filemap.FileID);
                         } catch (e) {
                             console.log(JSON.stringify(e));
@@ -46,7 +46,7 @@ function userRecordFileMap(database) {
 
             },
             fail: function(res) {
-                console.log("Files:" + JSON.stringify(res));
+                console.log('Files:' + JSON.stringify(res));
             }
         });
 }

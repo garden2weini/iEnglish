@@ -1,15 +1,16 @@
 //'use strict';
 const cloud = require('wx-server-sdk')
 
-let APIKEY = 'wx56dda72f065e7c06';
-let APISECRET = '8a9dc394eefec9932750a7b3f8699d7f';
-let JSCODE_URL = 'https://api.weixin.qq.com/sns/jscode2session';
-
+/**
+ * 从小程序端调用云函数时，开发者可以在云函数内使用 wx-server-sdk 提供的 getWXContext 方法获取到每次调用的上下文（appid、openid 等），
+ * 无需维护复杂的鉴权机制，即可获取天然可信任的用户登录态（openid）。
+ */
 exports.main = (event, context) => {
-    let { OPENID, APPID } = cloud.getWXContext() // 这里获取到的 openId 和 appId 是可信的
+    let { OPENID, APPID, UNIONID } = cloud.getWXContext() // 这里获取到的 openId 和 appId 是可信的
     return {
         OPENID,
-        APPID
+        APPID,
+        UNIONID
     }
     /*
     wx.request({ // 获取session_key+openid
