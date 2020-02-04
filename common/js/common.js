@@ -47,7 +47,7 @@ export function secToTime(s) {
     return t
 }
 
-export function empty4delay() {
+function empty4delay() {
     // do nothing!
 }
 

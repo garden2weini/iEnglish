@@ -18,7 +18,7 @@ Vue.prototype.Database = 'weini-home-b5ggv';
 Vue.prototype.RecordFile = function(bookName, chapter, sentenceIdx) {
 	let openid = uni.getStorageSync('OPENID');
     let recordFile = "recordfiles/" + openid + '-' + bookName + '-' + chapter + '-' + sentenceIdx + ".acc";
-    console.log("record file:" + recordFile);
+    //console.log("record file:" + recordFile);
     return recordFile;
 }
 
