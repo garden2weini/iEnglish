@@ -13,14 +13,14 @@ export function evaluateRecord(str1, str2) {
     var param1 = str1.toString().replace(reg, "");
     param1 = param1.toLowerCase();
     var param2 = str2.toString().replace(reg, "");
-    console.log("String1:" + param1);
-    console.log("String2:" + param2);
+    //console.log("String1:" + param1);
+    //console.log("String2:" + param2);
 
     var distance = levenshtein.get(param1, param2);
-    console.log("distance:" + distance);
+    //console.log("distance:" + distance);
     var rawLength = param1.length;
     rate = Math.round(distance * 100 / rawLength);
-    console.log("distanceRate:" + rate);
+    //console.log("distanceRate:" + rate);
     return rate;
 }
 
@@ -47,7 +47,12 @@ export function secToTime(s) {
     return t
 }
 
+export function empty4delay() {
+    // do nothing!
+}
+
 export default {
     secToTime,
     evaluateRecord,
+    empty4delay,
 }

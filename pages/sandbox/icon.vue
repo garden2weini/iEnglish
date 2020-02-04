@@ -7,14 +7,11 @@
             
         </view>
         <view>
-            <uni-icon type="mic-filled" size="30" color="grey" @click="test"></uni-icon>
-            <uni-icon type="mic" size="30" color="grey" @click="test"></uni-icon>
             <uni-icon type="forward" size="30" color="red" @click="test"></uni-icon>
             <uni-icon type="back" size="30" color="black" @click="test"></uni-icon>
             <uni-icon type="starhalf" size="30" color="blue" @click="test"></uni-icon>
             <uni-icon type="star" size="30" color="blue" @click="test"></uni-icon>
             <uni-icon type="star-filled" size="30" color="gold" @click="test"></uni-icon>
-            <uni-icon type="sound" size="30" color="gold" @click="test"></uni-icon>
             <uni-icon :type="playIcon.type" size="30" :color="playIcon.color" @click="hanlerPaly" />
             <uni-icon type="sound" size="30" color="grey" @click="test" />
             <uni-icon type="sound-filled" size="30" color="black" @click="test" />

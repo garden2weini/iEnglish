@@ -16,7 +16,7 @@
                 <!-- Raw Audio -->
                 <uni-icon :type="playIcon.type" size="30" :color="playIcon.color" @click="hanlerPaly" />
                 <text space="ensp" decode="true">{{ whiteSpace }}{{ whiteSpace }}{{ whiteSpace }}</text>
-                <uni-icon :type="recordIcon.type" size="30" :color="recordIcon.color" @click="hanlerRecord" />
+                <uni-icon :type="recordIcon.type" size="35" :color="recordIcon.color" @click="hanlerRecord" />
                 <!-- Record Audio -->
                 <text space="ensp" decode="true">{{ whiteSpace }}{{ whiteSpace }}{{ whiteSpace }}</text>
                 <uni-icon :type="playRecordedIcon.type" size="30" :color="playRecordedIcon.color" @click="playRecorded" />
@@ -36,14 +36,62 @@
 </template>
 
 <script>
-import uniIcon from '../../components/uni-icons/uni-icons.vue';
+import uniIcon from '@/components/uni-icons/uni-icons.vue';
 import common from '@/common/js/common.js';
 import wxCloud from '@/common/js/cloud_service.js';
 
 // NOTE: 获取App录音功能, 改为index.vue中进行授权
 const recorderManager = uni.getRecorderManager();
 const innerAudioContext = uni.createInnerAudioContext();
+const innerAudioContext4record = uni.createInnerAudioContext();
+// 评星的定义
+const StarDef = {
+    Zero: 60,
+    One: 70,
+    OneHalf: 80,
+    Two: 90,
+    TwoHalf: 95,
+    Full: 100
+};
 
+// 定义各Icon的含义
+const ICONs = {
+    Play_Start: {
+        // 播放文字声音
+        type: 'sound-filled',
+        color: 'black'
+    },
+    Play_Stop: {
+        // 停止播放文字声音
+        type: 'sound',
+        color: 'grey'
+    },
+    PlayMic_None: {
+        // 禁用播放录音
+        type: 'headphones',
+        color: 'white'
+    },
+    PlayMic_Pause: {
+        // 暂停播放录音
+        type: 'headphones',
+        color: 'grey'
+    },
+    PlayMic_Play: {
+        // 播放录音
+        type: 'headphones',
+        color: 'black'
+    },
+    Record: {
+        // 开始录音
+        type: 'mic-filled',
+        color: 'black'
+    },
+    Record_Stop: {
+        // 结束录音
+        type: 'micoff',
+        color: 'grey'
+    }
+};
 innerAudioContext.autoplay = true;
 
 export default {
@@ -64,24 +112,15 @@ export default {
             sliderProgress: 0, // 滑动控制条进度
             totalTime: 0, // 音频总时长
             nowTime: 0, // 音频当前播放时长
-            playImg: '/static/img/start.png', // 播放或者暂停图片
-            playIcon: { //
-                type: 'sound-filled',
-                color: 'black'
-            },
-            recordPlayImg: '/static/img/record/none.png', // 录音播放的按钮
-            playRecordedIcon:  { //
-                type: 'headphones',
-                color: 'white'
-            },
+            //playImg: '/static/img/start.png', // 播放或者暂停图片
+            playIcon: null,
+            //recordPlayImg: '/static/img/record/none.png', // 录音播放的按钮
+            playRecordedIcon: null,
             isRecord: false, // 是否开始录音
             isRecorded: false, // 是否已经录音完毕
             isPlayRecorded: false, // 是否已经点击录音播放
-            recordImg: '/static/img/record/record.png',
-            recordIcon: { //
-                type: 'mic-filled',
-                color: 'black'
-            },
+            //recordImg: '/static/img/record/record.png',
+            recordIcon: null,
             cloudContent: 'baidu api, Default data.',
             accessToken: null,
             bookImage: '/static/logo.png',
@@ -90,15 +129,28 @@ export default {
             contentIndex: -1,
             chapters: null, // 当前图书章节及内容，从数据库中读取json数据
             curChapterName: 'None',
+            rawEnPath: '', // 原文合成声音路径
             voicePath: '', // 录制音频的文件路径
             voiceText: '', // 百度API识别到的语音文字
-            cloudFileId: '', // WX cloud storage file id.
+            cloudFileId: '' // WX cloud storage file id.
             //correctRate: 'Listening......' // 录音匹配度描述
         };
     },
+    created() {
+        //this.getBaiduToken();
+        wxCloud.getBaiduToken();
+        this.initAudioContext();
+    },
+    beforeMount() {
+        this.playIcon = ICONs.Play_Start;
+        this.playRecordedIcon = ICONs.PlayMic_None;
+        this.recordIcon = ICONs.Record;
+    },
+    mounted() {},
     onLoad(e) {
         // 准备加载图书数据
         this.curBook = e.book;
+
         this.bookImage = '/static/img/book/' + e.book + '.jpg';
         this.getChapters(this.curBook);
 
@@ -108,9 +160,24 @@ export default {
             console.log('recorder stop:' + JSON.stringify(res));
             self.voicePath = res.tempFilePath;
             self.isRecorded = true;
+            self.isParsedRecord = false;
         });
     },
     methods: {
+        resetStatus() {
+            this.resetStars();
+            // 获取当前句子是否有录音
+            var curFilePath = this.RecordFile(this.curBook, this.chapterIndex, this.contentIndex);
+            var curFileId = uni.getStorageSync(curFilePath);
+            console.log('resetStatus -- Current File ID:' + curFileId);
+            if (curFileId && curFileId.length > 0) {
+                this.voicePath = curFileId;
+                this.innerAudioContext4record.src = this.voicePath;
+                this.isRecorded = true;
+                this.isParsedRecord = true;
+                console.log("resetStatus:"+ this.voicePath);
+            }
+        },
         resetStars() {
             this.starColor = 'grey';
             this.star1 = 'star';
@@ -120,19 +187,19 @@ export default {
             this.isRecorded = false;
             this.isPlayRecorded = false;
             this.isParsedRecord = false;
+            //this.innerAudioContext.stop();
         },
         playRecorded() {
-            if (!this.isRecorded) {
-                return;
-            }
-            
-            this.isPlayRecorded = !this.isPlayRecorded;
-            
+            //if (!this.isRecorded) {
+            //    return;
+            //}
             if (this.voicePath) {
                 this.innerAudioContext.src = this.voicePath;
             }
             
-            if(this.isParsedRecord) {
+            this.isPlayRecorded = !this.isPlayRecorded;
+            
+            if (this.isParsedRecord) {
                 //
             } else {
                 this.isParsedRecord = true;
@@ -156,9 +223,9 @@ export default {
             let FORMAT = 'm4a'; // m4a for mp3,
             let CUID = 'weini-garden-2020';
             var AUDIO_FILE = this.voicePath;
-            
+
             console.log('parseAudioPro:' + AUDIO_FILE);
-            
+
             let speech_file = wx.getFileSystemManager().readFileSync(AUDIO_FILE);
 
             console.log('Raw:' + speech_file);
@@ -166,6 +233,7 @@ export default {
             console.log('Length:' + length);
             let speech = uni.arrayBufferToBase64(speech_file);
             //console.log('Base64Speeh:' + speech);
+            this.accessToken = wx.getStorageSync('WXAccessToken');
             uni.request({
                 url: ARS_URL,
                 method: 'POST',
@@ -185,46 +253,59 @@ export default {
                     len: length
                 },
                 success: res => {
-                    console.log(res.data);
+                    //console.log(res.data);
                     if (res.data.result) {
                         this.voiceText = res.data.result;
                     } else {
                         this.voiceText = JSON.stringify(res.data);
                     }
                     var evalResult = common.evaluateRecord(this.storyContent, this.voiceText);
-                    console.log('evalResult:' + evalResult);
+                    //console.log('evalResult:' + evalResult);
                     evalResult = 100 - evalResult;
                     //this.correctRate = '准确度: ' + (100 - evalResult);
                     this.starColor = 'gold';
-                    if(evalResult <= 50) {
+                    if (evalResult <= StarDef.Zero) {
                         //this.star1 = 'star';
-                    } else if (evalResult <= 60) {
+                    } else if (evalResult <= StarDef.One) {
                         this.star1 = 'star-filled'; //star, starhalf, star-filled
                         this.star2 = 'star';
                         this.star3 = 'star';
-                    } else if (evalResult <= 70) {
-                        this.star1 = 'star-filled'; //star, starhalf, star-filled
+                    } else if (evalResult <= StarDef.OneHalf) {
+                        this.star1 = 'star-filled';
                         this.star2 = 'starhalf';
                         this.star3 = 'star';
-                    } else if (evalResult <= 80) {
-                        this.star1 = 'star-filled'; //star, starhalf, star-filled
+                    } else if (evalResult <= StarDef.Two) {
+                        this.star1 = 'star-filled';
                         this.star2 = 'star-filled';
                         this.star3 = 'star';
-                    } else if (evalResult <= 90) {
-                        this.star1 = 'star-filled'; //star, starhalf, star-filled
+                    } else if (evalResult <= StarDef.TwoHalf) {
+                        this.star1 = 'star-filled';
                         this.star2 = 'star-filled';
                         this.star3 = 'starhalf';
                     } else {
-                        this.star1 = 'star-filled'; //star, starhalf, star-filled
+                        this.star1 = 'star-filled';
                         this.star2 = 'star-filled';
                         this.star3 = 'star-filled';
                     }
-                    if(evalResult > 50) {
-                        // 只要录音质量可以标星，则保存到云存储
-                        this.cloudFileId = wxCloud.uploadFile2WxCloud(this.voicePath, this.RecordFile(this.curBook, this.chapterIndex, this.contentIndex));
+                    if (evalResult > StarDef.One) {
+                        // 只要录音质量可以标星，则保存到云存储，同时更新缓存map and 更新数据库
+                        var filePath = this.RecordFile(this.curBook, this.chapterIndex, this.contentIndex);
+                        if(wx.getStorageSync(filePath)) {
+                            // 如果已经保存过录音，则暂不更新缓存和数据库，仅更新存储中的录音文件（文件名相同的）
+                            wxCloud.uploadFile2WxCloud(this.Database, this.voicePath, filePath, evalResult, false);
+                        } else {
+                            wxCloud.uploadFile2WxCloud(this.Database, this.voicePath, filePath, evalResult, true);
+                        }
+                        
+                        // NOTE: 播放完成+过关3秒后自动到下一句
+                        var delay = this.innerAudioContext.duration;
+                        if (!delay) {
+                            delay = 0;
+                        }
+                        delay = (delay + 3) * 1000;
+                        var timeoutID = setTimeout(this.goForward, delay, null);
                     }
                     console.log(this.voiceText);
-                    
                 },
                 fail: result => {
                     this.voiceText = JSON.stringify(result);
@@ -234,7 +315,7 @@ export default {
         },
         goBack() {
             this.isPlay = false;
-            
+
             let chapterLen = this.chapters.length;
             let curContents = this.chapters[this.chapterIndex];
             let contentLen = this.chapters[this.chapterIndex].contents.length;
@@ -249,11 +330,17 @@ export default {
             } else {
                 this.contentIndex--;
             }
-            this.resetStars();
+            this.resetStatus();
             this.curChapterName = this.chapters[this.chapterIndex].name;
             this.storyContent = this.chapters[this.chapterIndex].contents[this.contentIndex].content;
         },
         goForward() {
+            // NOTE:判断当前是否哟与合格录音，没有则不能下一句
+            var haveFile = wx.getStorageSync(this.RecordFile(this.curBook, this.chapterIndex, this.contentIndex));
+            if (!haveFile) {
+                return;
+            }
+
             this.isPlay = false;
             let chapterLen = this.chapters.length;
             let curContents = this.chapters[this.chapterIndex];
@@ -271,7 +358,7 @@ export default {
             }
             //console.log('ChapterLen:' + chapterLen + ',ContentLen:' + contentLen);
             //console.log('ChapterIdx:' + this.chapterIndex + ',ContentIdx:' + this.contentIndex);
-            this.resetStars();
+            this.resetStatus();
             this.curChapterName = this.chapters[this.chapterIndex].name;
             this.storyContent = this.chapters[this.chapterIndex].contents[this.contentIndex].content;
         },
@@ -280,7 +367,7 @@ export default {
             var self = this;
             // 1. 获取数据库引用
             const db = wx.cloud.database({
-                env: this.Database,
+                env: this.Database
             });
             // 2. 构造查询语句(NOTE:每次只能获取20条记录)
             db.collection(bookTable)
@@ -306,34 +393,7 @@ export default {
         hanlerRecord() {
             // 录音暂停
             this.isRecord = !this.isRecord;
-            //this.correctRate = 'Listening......';
             this.resetStars();
-            
-            //this.voiceText = '';
-        },
-        getBaiduToken() {
-            // 通过调用云函数获得baidu access token
-            wx.cloud.init(); //调用前需先调用init
-            wx.cloud
-                .callFunction({
-                    name: 'baidu_api',
-                    data: {
-                        //"content": "..."
-                    }
-                })
-                .then(res => {
-                    //console.log(res.result);
-                    if (res.result.code == 300) {
-                        uni.showModal({
-                            title: '温馨提示',
-                            content: '获取语音失败！'
-                        });
-                        this.accessToken = 'Ops!';
-                    } else {
-                        this.accessToken = res.result.token;
-                    }
-                    //console.log("getBaiduToken:" +this.accessToken);
-                });
         },
         initAudioContext() {
             // 创建音频播放对象
@@ -349,8 +409,8 @@ export default {
                 // 当音频播放结束后，将滑动条滑到末尾
                 this.sliderProgress = 100;
                 this.isPlay = false;
-                this.isPlayRecorded = false;
             });
+            
             // 音频播放中
             this.innerAudioContext.onTimeUpdate(res => {
                 let duration = this.innerAudioContext.duration;
@@ -362,8 +422,30 @@ export default {
                 // 设置滑动条位置，小数计算不精确，转为整数计算
                 this.sliderProgress = ((currentTime * 1000000) / (duration * 1000000)) * 100;
             });
+            
+            // 创建音频播放对象
+            this.innerAudioContext4record = wx.createInnerAudioContext();
+            
+            // 音频进入可以播放状态
+            this.innerAudioContext4record.onCanplay(res => {
+                this.isPlay = false;
+                this.isPlayRecorded = false;
+            });
+            // 音频自然播放结束事件
+            this.innerAudioContext4record.onEnded(res => {
+                // 当音频播放结束后，将滑动条滑到末尾
+                this.isPlayRecorded = false;
+            });
+            
+            // 音频播放中
+            this.innerAudioContext4record.onTimeUpdate(res => {
+                
+            });
+            
+            
         },
         updateAudioUrl(_storyContent) {
+            this.accessToken = wx.getStorageSync('WXAccessToken');
             // 设置音频播放来源.
             // NOTE: 此方法仅在用户点击播放StoryContent时调用，最大限度保证Baidu Access Token已经获取到
             var param = {
@@ -395,54 +477,45 @@ export default {
                 fd.push(k + '=' + encodeURIComponent(data[k]));
             }
             var tail = fd.join('&');
-            var fullUrl = 'https://tsn.baidu.com/text2audio?' + tail;
-            this.innerAudioContext.src = fullUrl;
+            this.rawEnPath = 'https://tsn.baidu.com/text2audio?' + tail;
+            console.log('Raw Eng Path:' + this.rawEnPath);
+            this.innerAudioContext.src = this.rawEnPath;
         }
     },
-    created() {
-        this.getBaiduToken();
-        this.initAudioContext();
-    },
-    mounted() {},
     destroyed() {
         this.innerAudioContext.destroy();
     },
     watch: {
         isPlayRecorded(val, oldVal) {
             this.innerAudioContext.offCanplay();
+            console.log("isPlayRecorded:"+ val);
             if (val) {
-                this.recordPlayImg = '/static/img/record/pause.png';
-                this.playRecordedIcon = { //
-                    type: 'headphones',
-                    color: 'grey'
-                };
-                this.innerAudioContext.play();
+                //this.recordPlayImg = '/static/img/record/pause.png';
+                this.playRecordedIcon = ICONs.PlayMic_Pause;
+                //this.innerAudioContext4record.src = this.voicePath;
+                //var timeoutID = setTimeout(common.empty4delay, 500, null);
+                console.log('this.voicePath to play:' + this.voicePath);
+                this.innerAudioContext4record.play();
+                
             } else {
-                this.recordPlayImg = '/static/img/record/play.png';
-                this.playRecordedIcon = { //
-                    type: 'headphones',
-                    color: 'black'
-                };
-                this.innerAudioContext.pause();
+                //this.recordPlayImg = '/static/img/record/play.png';
+                this.playRecordedIcon = ICONs.PlayMic_Play;
+                this.innerAudioContext4record.pause();
             }
         },
         isPlay(val, oldVal) {
             this.innerAudioContext.offCanplay();
             if (val) {
-                this.playImg = '/static/img/stop.png';
-                this.playIcon = { 
-                    type: 'sound',
-                    color: 'grey'
-                };
+                //this.playImg = '/static/img/stop.png';
+                this.playIcon = ICONs.Play_Stop;
                 this.updateAudioUrl(this.storyContent);
+                //this.innerAudioContext.src = this.rawEnPath;
+                //var timeoutID = setTimeout(common.empty4delay, 500, null);
                 this.innerAudioContext.play();
                 //console.log('play content:' + this.innerAudioContext.src);
             } else {
-                this.playImg = '/static/img/start.png';
-                this.playIcon = {
-                    type: 'sound-filled',
-                    color: 'black'
-                };
+                //this.playImg = '/static/img/start.png';
+                this.playIcon = ICONs.Play_Start;
                 this.innerAudioContext.pause();
             }
         },
@@ -459,22 +532,16 @@ export default {
                     format: 'm4a' // 音频格式，有效值 aac/mp3
                 };
                 // 编写开始录音的逻辑
-                this.recordImg = '/static/img/record/stop.png';
-                this.recordIcon = { //
-                    type: 'micoff',
-                    color: 'grey'
-                };
+                //this.recordImg = '/static/img/record/stop.png';
+                this.recordIcon = ICONs.Record_Stop;
                 // WARN: 提供options参数在真机模式下有问题，暂不使用。无参数即可满足百度语音识别要求!
                 //recorderManager.start(options);
                 recorderManager.start();
                 this.isRecorded = false;
             } else {
                 // 编写结束录音的逻辑
-                this.recordImg = '/static/img/record/record.png';
-                this.recordIcon = { //
-                    type: 'mic-filled',
-                    color: 'black'
-                };
+                //this.recordImg = '/static/img/record/record.png';
+                this.recordIcon = ICONs.Record;
                 recorderManager.stop();
             }
         },
@@ -482,25 +549,22 @@ export default {
             // NOTE: 获取到章节及内容后，进行初始化逻辑
             this.chapterIndex = 0;
             this.contentIndex = 0;
+            // NOTE: 只有book num和content都获取，chapter+sentence索引更新后，才能进行reset
+            this.resetStatus();
+
             this.curChapterName = val[this.chapterIndex].name;
             this.storyContent = val[this.chapterIndex].contents[this.contentIndex].content;
         },
         storyContent(val, oldVal) {
-            console.log('CurrentContent:' + val);
+            //console.log('CurrentContent:' + val);
         },
         isRecorded(val, oldVal) {
             if (val) {
-                this.recordPlayImg = '/static/img/record/play.png';
-                this.playRecordedIcon = { //
-                    type: 'headphones',
-                    color: 'black'
-                };
+                //this.recordPlayImg = '/static/img/record/play.png';
+                this.playRecordedIcon = ICONs.PlayMic_Play;
             } else {
-                this.recordPlayImg = '/static/img/record/none.png';
-                this.playRecordedIcon = { //
-                    type: 'headphones',
-                    color: 'white'
-                };
+                //this.recordPlayImg = '/static/img/record/none.png';
+                this.playRecordedIcon = ICONs.PlayMic_None;
             }
         }
     }
