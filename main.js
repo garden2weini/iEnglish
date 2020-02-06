@@ -14,12 +14,20 @@ app.$mount()
 // NOTE: 业务常量
 // WX Cloud Database Name.
 Vue.prototype.Database = 'weini-home-b5ggv';
+Vue.prototype.CloudRoot = 'cloud://weini-home-b5ggv.7765-weini-home-b5ggv-1301119393/';
 // 对应每个微信用户+章节+句子索引的录音文件名.
 Vue.prototype.RecordFile = function(bookName, chapter, sentenceIdx) {
 	let openid = uni.getStorageSync('OPENID');
     let recordFile = "recordfiles/" + openid + '-' + bookName + '-' + chapter + '-' + sentenceIdx + ".acc";
     //console.log("record file:" + recordFile);
     return recordFile;
+}
+
+Vue.prototype.FileName = function(bookName, chapter, sentenceIdx) {
+    let sentenceFile = "rawfiles/" + bookName + '-' + chapter + '-' + sentenceIdx + ".acc";
+    //console.log("FileName..............." + sentenceFile);
+    
+    return sentenceFile;
 }
 
 // 以下为业务逻辑

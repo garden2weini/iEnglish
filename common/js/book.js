@@ -5,7 +5,7 @@
  * @param {Object} storyContent 待合成文字
  * @param {Object} innerAudioContext 播放器Context
  */
-function buildAudioUrl(storyContent, innerAudioContext) {
+function buildAudioUrl(storyContent, innerAudioContext, fileRoot, fileName) {
     var baseUrl = 'https://tsn.baidu.com/text2audio?';
     var accessToken = wx.getStorageSync('WXAccessToken');
     // 设置音频播放来源.
@@ -40,8 +40,59 @@ function buildAudioUrl(storyContent, innerAudioContext) {
     }
     var tail = fd.join('&');
     var rawEnPath = baseUrl + tail; // 原文合成声音URL路径
+    downloadBaiduAudio2WxCloud(rawEnPath, fileRoot, fileName); // 'rawfiles/test1.acc'
     //console.log('Raw Eng Path:' + rawEnPath);
-    innerAudioContext.src = rawEnPath;
+    //innerAudioContext.src = rawEnPath;
+}
+
+/**
+ * 检查是否有.从百度下载文字合成的语音,然后上传至wx cloud存储
+ * @param {Object} source
+ * * @param {Object} fileRoot 云存储的根路径
+ * @param {Object} dist 云存储的相对路径
+ */
+function downloadBaiduAudio2WxCloud(source, fileRoot, dist) {
+    var cloudFile = fileRoot.toLocaleString() + dist.toLocaleString();
+    
+    wx.cloud.getTempFileURL({
+        fileList: [cloudFile],
+        success: res => {
+            // get temp file URL
+            // console.log("Try cloud file Result:" + JSON.stringify(res));
+            if (res.fileList[0].status == 0) {
+                console.log('Have Got The File: Yes.');
+                innerAudioContext.src = cloudFile;
+            } else {
+                console.log('Have Got The File: No. Download from baidu and save to wx cloud.');
+                uni.downloadFile({
+                    url: source,
+                    success: (res) => {
+                        if (res.statusCode === 200) {
+                            var tempFilePath = res.tempFilePath;
+                            console.log('下载成功');
+                            wx.cloud.uploadFile({
+                                cloudPath: dist,
+                                filePath: tempFilePath, // 文件路径
+                                success: res => {
+                                    innerAudioContext.src = cloudFile;
+                                },
+                                fail: err => {
+                                    // handle error
+                                }
+                            })
+                        }
+                    },
+                    fail: (res) => {
+                        console.log('下载失败:' + JSON.stringify(res));
+                    }
+                });
+            }
+        },
+        fail: err => {
+            // handle error
+        }
+    })
+
 }
 
 export default {

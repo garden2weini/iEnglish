@@ -505,8 +505,11 @@ export default {
             this.storyContent = val[this.chapterIndex].contents[this.contentIndex].content;
         },
         storyContent(val, oldVal) {
-            // 每次原文语句更新都重新构造新的语音合成url，并赋值给播放器
-            book.buildAudioUrl(val, this.innerAudioContext);
+            // 每次原文语句更新都重新构造新的语音合成url，并赋值给播放器. 百度合成语音先保存到本地，再关联播放组件
+            var tmpFile = this.FileName(this.curBook, this.chapterIndex, this.contentIndex);
+            console.log('...' + this.curBook + ';' + this.chapterIndex + ';' + this.contentIndex);
+            console.log('...' + this.CloudRoot + ';' + tmpFile);
+            book.buildAudioUrl(val, this.innerAudioContext, this.CloudRoot, tmpFile);
         },
         isRecorded(val, oldVal) {
             if (val) {
