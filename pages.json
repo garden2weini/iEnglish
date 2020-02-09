@@ -23,6 +23,12 @@
             "style": {
                 "navigationBarTitleText": "try it"
             }
+        },
+        {
+            "path": "pages/sandbox/startup",
+            "style": {
+                "navigationBarTitleText": "startup"
+            }
         }
 
     ],

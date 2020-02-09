@@ -23,7 +23,11 @@
         </view>
         <view class="title">SandBox</view>
         <view>
+            <!--
             <image class="story_column" @click="test()" src="../../static/logo.png" mode="aspectFit" />
+            -->
+            <image class="story_column" @click="startup()" src="../../static/logo.png" mode="aspectFit" />
+            
         </view>
         <!--
         <view class="title">Good English 8</view>
@@ -70,6 +74,11 @@ export default {
             uni.redirectTo({
                 //url: '../sandbox/record'
                 url: '../sandbox/tryit'
+            });
+        },
+        startup() { // Just Test
+            uni.redirectTo({
+                url: '../sandbox/startup'
             });
         }
     },

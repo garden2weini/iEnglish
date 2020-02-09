@@ -37,6 +37,7 @@ brew install ffmpeg
 - [uni-app 全局变量的几种实现方式](https://blog.csdn.net/Mrchai521/article/details/89348881)
 - [百度-开发智能小程序](https://smartprogram.baidu.com/docs/develop/api/media/recorder_RecorderManager/)
 - [微信登录](https://developers.weixin.qq.com/miniprogram/dev/framework/open-ability/login.html)
+- [Flex 布局教程：语法篇](http://www.ruanyifeng.com/blog/2015/07/flex-grammar.html)
 
 ### 知识点
 - rpx 即响应式px，一种根据屏幕宽度自适应的动态单位。以750宽的屏幕为基准，750rpx恰好为屏幕宽度。屏幕变宽，rpx 实际显示效果会等比放大。

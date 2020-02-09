@@ -5,7 +5,7 @@
             <view class="story" style="height: 160rpx;width: 660rpx;">
                 <text style="font-weight: 600; font-style: italic; color:#F76260;">{{ curChapterName }}</text>
                 <br />
-                <text style="height: 20rpx;width: 660rpx; font-size: 30rpx;">{{ storyContent }}</text>
+                <text style="height: 20rpx;width: 660rpx; font-size: 30rpx;">{{contentIndex+1}}. {{ storyContent }}</text>
             </view>
             <view>
                 <button @click="goBack" class="mini-btn" type="primary" size="mini">{{ leftArraw }}</button>
@@ -139,7 +139,6 @@ export default {
         };
     },
     created() {
-        wxCloud.getBaiduToken();
         this.initAudioContext();
     },
     beforeMount() {
@@ -167,16 +166,18 @@ export default {
     methods: {
         resetStatus() {  // 用于goBack(),goForward(),watch.chapters
             this.resetStars();
+            //this.innerAudioContext.src = null;
+            
             // 获取当前句子是否有录音
             var curFilePath = this.RecordFile(this.curBook, this.chapterIndex, this.contentIndex);
             var curFileId = uni.getStorageSync(curFilePath);
-            console.log('resetStatus -- Current File ID:' + curFileId);
+            //console.log('resetStatus -- Current File ID:' + curFileId);
             if (curFileId && curFileId.length > 0) {
                 this.voicePath = curFileId;
                 this.innerAudioContext4record.src = this.voicePath;
                 this.isRecorded = true;
                 this.isParsedRecord = true;
-                console.log("resetStatus:"+ this.voicePath);
+                //console.log("resetStatus:"+ this.voicePath);
             }
         },
         resetStars() { // only for hanlerRecord()录音按钮事件 和resetStatus()
@@ -275,13 +276,13 @@ export default {
             let CUID = 'weini-garden-2020';
             var AUDIO_FILE = this.voicePath;
 
-            console.log('parseAudioPro:' + AUDIO_FILE);
+            //console.log('parseAudioPro:' + AUDIO_FILE);
 
             let speech_file = wx.getFileSystemManager().readFileSync(AUDIO_FILE);
 
-            console.log('Raw:' + speech_file);
+            //console.log('Raw:' + speech_file);
             let length = speech_file.byteLength;
-            console.log('Length:' + length);
+            //console.log('Length:' + length);
             let speech = uni.arrayBufferToBase64(speech_file);
             //console.log('Base64Speeh:' + speech);
             this.accessToken = wx.getStorageSync('WXAccessToken');
@@ -464,7 +465,7 @@ export default {
                 this.playIcon = ICONs.Play_Stop;
                 //this.updateAudioUrl(this.storyContent);
                 this.innerAudioContext.play();
-                //console.log('play content:' + this.innerAudioContext.src);
+                console.log('Play Content Src:' + this.innerAudioContext.src);
             } else {
                 this.playIcon = ICONs.Play_Start;
                 this.innerAudioContext.pause();
@@ -507,8 +508,8 @@ export default {
         storyContent(val, oldVal) {
             // 每次原文语句更新都重新构造新的语音合成url，并赋值给播放器. 百度合成语音先保存到本地，再关联播放组件
             var tmpFile = this.FileName(this.curBook, this.chapterIndex, this.contentIndex);
-            console.log('...' + this.curBook + ';' + this.chapterIndex + ';' + this.contentIndex);
-            console.log('...' + this.CloudRoot + ';' + tmpFile);
+            //console.log('...' + this.curBook + ';' + this.chapterIndex + ';' + this.contentIndex);
+            //console.log('...' + this.CloudRoot + ';' + tmpFile);
             book.buildAudioUrl(val, this.innerAudioContext, this.CloudRoot, tmpFile);
         },
         isRecorded(val, oldVal) {
